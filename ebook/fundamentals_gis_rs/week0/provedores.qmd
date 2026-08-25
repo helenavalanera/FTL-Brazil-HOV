@@ -1,0 +1,16 @@
+---
+title: "Provedores de Dados Geoespaciais"
+subtitle: "Onde encontrar os dados que nos interessam?"
+resources:
+  - data/provedores.json
+---
+
+Para cada um dos 19 temas que mais interessaram na turma, mapeamos alguns provedores de dados e uma bubble chart. Clique num tema para abrir e ver os provedores, depois, clique num provedor para ir direto ao site.
+
+{{< include data/temas_provedores_bubble.html >}}
+
+::: {.callout-tip appearance="simple"}
+## Quer adicionar um provedor?
+
+Os dados desse diagrama vivem em [`data/provedores.json`](data/provedores.json), editável por qualquer aluno. Veja o passo a passo em [Como Contribuir](../../course-info/how-to-contribute.md).
+:::

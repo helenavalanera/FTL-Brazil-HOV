@@ -1,0 +1,17 @@
+[project]
+name = "eda"
+version = "0.1.0"
+description = "Repositorio para quem aprende python."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.5.2",
+    "pandas>=3.0.5",
+]
+
+[project.scripts]
+eda = "eda:main"
+
+[build-system]
+requires = ["uv_build>=0.12.0,<0.13.0"]
+build-backend = "uv_build"
