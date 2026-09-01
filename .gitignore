@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Python-generated files
 __pycache__/
 *.py[oc]
@@ -11,3 +12,34 @@ wheels/
 .venv/
 .DS_Store
 __pycache__/
+=======
+# Quarto
+/.quarto/
+/_site/
+**/*.quarto_ipynb
+
+# Python / uv
+.venv/
+__pycache__/
+*.py[oc]
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# Legacy content kept locally for reference, not published
+/_legacy/
+
+
+## important!!!!
+.env
+
+## qualquer coisa
+manifest_os/
+.claude/*
+
+fundamentals_gis_rs/week1/cache/
+fundamentals_gis_rs/week2/outputs/
+>>>>>>> upstream/main
