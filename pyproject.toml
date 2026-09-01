@@ -1,26 +1,11 @@
 [project]
-<<<<<<< HEAD
 name = "ftl-brazil"
 version = "0.1.0"
-description = "Add your description here"
+description = "SpaceTech Bootcamp — GIS module course ebook and notebooks"
 readme = "README.md"
 authors = [
     { name = "helenavalanera", email = "helena.valanera@gmail.com" }
 ]
-requires-python = ">=3.14"
-dependencies = []
-
-[project.scripts]
-ftl-brazil = "ftl_brazil:main"
-
-[build-system]
-requires = ["uv_build>=0.12.3,<0.13.0"]
-build-backend = "uv_build"
-=======
-name = "spacetech-gis-ebook"
-version = "0.1.0"
-description = "SpaceTech Bootcamp — GIS module course ebook and notebooks"
-readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "aiohttp>=3.14.3",
@@ -58,6 +43,12 @@ dependencies = [
     "zarr>3",
 ]
 
+[project.scripts]
+ftl-brazil = "ftl_brazil:main"
+
+[build-system]
+requires = ["uv_build>=0.12.3,<0.13.0"]
+build-backend = "uv_build"
+
 [tool.uv]
 package = false
->>>>>>> upstream/main
