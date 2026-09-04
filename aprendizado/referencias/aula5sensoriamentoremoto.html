@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula 5 (Prep) — Sensoriamento Remoto: ARD, Correções, Índices e STAC</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a1220; --panel:#101b30; --panel-2:#16233c; --line:#223256;
+    --text:#e7ecf5; --text-dim:#8ea0c2; --accent:#5eead4; --accent-dim:#2f6f66;
+    --amber:#f5a524; --amber-dim:#6b4b16; --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:radial-gradient(circle at 15% 0%, rgba(94,234,212,0.06), transparent 40%), radial-gradient(circle at 85% 10%, rgba(245,165,36,0.05), transparent 35%), var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; line-height:1.55;}
+  .grid-overlay{position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.35; background-image:linear-gradient(rgba(94,234,212,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(94,234,212,.035) 1px, transparent 1px); background-size:42px 42px; mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent 70%);}
+  h1,h2,h3,h4{font-family:'Space Grotesk', sans-serif; margin:0 0 .4em;}
+  code, pre, .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:var(--accent);}
+  .shell{display:flex; min-height:100vh; position:relative; z-index:1;}
+  nav.side{width:270px; flex:none; position:sticky; top:0; align-self:flex-start; height:100vh; overflow-y:auto; padding:26px 18px 26px 22px; border-right:1px solid var(--line); background:linear-gradient(180deg, var(--panel), var(--bg));}
+  nav.side::-webkit-scrollbar{width:6px;}
+  nav.side::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .brand{display:flex; align-items:center; gap:9px; margin-bottom:6px;}
+  .brand .dot{width:9px; height:9px; border-radius:50%; background:var(--amber); box-shadow:0 0 10px var(--amber); animation:pulse 2.4s infinite ease-in-out;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.35;}}
+  .brand span{font-family:'Space Grotesk'; font-weight:600; font-size:.8rem; letter-spacing:1.5px; color:var(--text-dim); text-transform:uppercase;}
+  .side h1{font-size:1.15rem; margin-bottom:2px;}
+  .side .sub{color:var(--text-dim); font-size:.8rem; margin-bottom:20px;}
+  .navlist{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:1px;}
+  .navlist li a{display:flex; gap:9px; align-items:baseline; text-decoration:none; color:var(--text-dim); font-size:.85rem; padding:7px 8px; border-radius:7px; transition:.15s;}
+  .navlist li a:hover{background:var(--panel-2); color:var(--text);}
+  .navlist li a .n{font-family:'IBM Plex Mono'; font-size:.7rem; color:var(--amber); flex:none; width:22px;}
+  .navlist .group-label{font-size:.66rem; text-transform:uppercase; letter-spacing:1.6px; color:var(--text-dim); opacity:.55; margin:14px 0 4px 8px;}
+  main{flex:1; min-width:0; padding:44px 48px 120px;}
+  .hero{max-width:840px; margin-bottom:26px;}
+  .eyebrow{font-family:'IBM Plex Mono'; color:var(--amber); font-size:.76rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; display:block;}
+  .hero h1{font-size:2.1rem; line-height:1.1;}
+  .hero p{color:var(--text-dim); font-size:.98rem; max-width:670px;}
+  .status-strip{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;}
+  .chip{font-family:'IBM Plex Mono'; font-size:.7rem; padding:6px 11px; border-radius:100px; border:1px solid var(--line); color:var(--text-dim);}
+
+  .source-note{max-width:840px; border:1px solid var(--amber-dim); background:rgba(245,165,36,.07); border-radius:10px; padding:16px 20px; margin-bottom:30px;}
+  .source-note h3{color:var(--amber); font-size:.82rem; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;}
+  .source-note p{color:#d7deec; font-size:.87rem; margin:5px 0;}
+
+  section.lesson{max-width:840px; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:16px; overflow:hidden; background:linear-gradient(180deg, var(--panel), var(--panel-2)); scroll-margin-top:26px;}
+  section.lesson > summary{list-style:none; cursor:pointer; padding:18px 22px; display:flex; align-items:center; gap:14px;}
+  section.lesson > summary::-webkit-details-marker{display:none;}
+  .midx{font-family:'IBM Plex Mono'; color:var(--amber); font-size:.8rem; border:1px solid var(--amber-dim); border-radius:6px; padding:3px 8px; flex:none;}
+  section.lesson > summary h2{font-size:1.08rem; flex:1;}
+  section.lesson > summary .tag{font-family:'IBM Plex Mono'; font-size:.66rem; color:var(--text-dim); border:1px solid var(--line); padding:3px 9px; border-radius:100px; white-space:nowrap;}
+  .chev{color:var(--text-dim); transition:.2s; flex:none;}
+  section.lesson[open] > summary .chev{transform:rotate(90deg);}
+  .lbody{padding:0 22px 24px; border-top:1px solid var(--line);}
+  .objetivo{margin-top:16px; font-size:.88rem; color:var(--amber); background:rgba(245,165,36,.06); border:1px solid var(--amber-dim); border-radius:8px; padding:9px 13px;}
+  .objetivo b{color:var(--amber);}
+  .lbody h3{color:var(--accent); text-transform:uppercase; letter-spacing:.6px; font-size:.74rem; margin-top:20px;}
+  .lbody ul{padding-left:20px; margin:9px 0;}
+  .lbody li{margin-bottom:6px; color:#d7deec;}
+  .lbody p{color:#d7deec;}
+  pre{background:#0c1729 !important; border:1px solid var(--line); border-radius:8px; padding:13px 15px; overflow-x:auto; font-size:.8rem; margin:10px 0;}
+  code.inline{background:var(--panel-2); border:1px solid var(--line); padding:1px 6px; border-radius:5px; font-size:.85em;}
+
+  table.reftable{width:100%; border-collapse:collapse; margin:10px 0; font-size:.8rem;}
+  table.reftable th, table.reftable td{border:1px solid var(--line); padding:6px 9px; text-align:left; color:#d7deec;}
+  table.reftable th{background:var(--panel-2); color:var(--accent); font-family:'IBM Plex Mono'; font-size:.68rem; text-transform:uppercase; letter-spacing:.4px;}
+
+  .callout{border-left:3px solid var(--amber); background:rgba(245,165,36,.06); border-radius:0 8px 8px 0; padding:9px 13px; margin:10px 0; font-size:.86rem; color:#d7deec;}
+  .callout.important{border-left-color:#f0645c; background:rgba(240,100,92,.06);}
+  .callout.accent{border-left-color:var(--accent); background:rgba(94,234,212,.06);}
+
+  .exlist{margin-top:14px; padding-top:12px; border-top:1px dashed var(--line);}
+  .exlist > .exlabel-main{font-family:'IBM Plex Mono'; font-size:.72rem; color:var(--amber); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:block;}
+  .exercise{margin-bottom:10px; border:1px dashed var(--accent-dim); border-radius:8px; padding:11px 14px; background:rgba(94,234,212,0.03);}
+  .exercise .exnum{font-family:'IBM Plex Mono'; font-size:.7rem; color:var(--accent); margin-bottom:5px; display:block;}
+  .exercise details{margin-top:8px;}
+  .exercise summary{cursor:pointer; color:var(--amber); font-family:'IBM Plex Mono'; font-size:.74rem; list-style:none;}
+  .exercise summary::-webkit-details-marker{display:none;}
+  .exercise summary::before{content:"▸ ";}
+  .exercise details[open] summary::before{content:"▾ ";}
+
+  footer{max-width:840px; color:var(--text-dim); font-size:.8rem; padding-top:18px; border-top:1px solid var(--line); margin-top:10px;}
+
+  @media (max-width: 880px){
+    nav.side{position:fixed; left:-290px; z-index:60; transition:.25s; box-shadow:0 0 40px rgba(0,0,0,.6);}
+    nav.side.open{left:0;}
+    main{padding:70px 18px 120px;}
+    .hero h1{font-size:1.55rem;}
+    .menubtn{display:flex !important;}
+  }
+  .menubtn{display:none; position:fixed; top:14px; left:14px; z-index:61; background:var(--panel-2); border:1px solid var(--line); color:var(--text); width:40px; height:40px; border-radius:8px; align-items:center; justify-content:center; cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="grid-overlay"></div>
+<button class="menubtn" id="menubtn">☰</button>
+
+<div class="shell">
+  <nav class="side" id="sidenav">
+    <div class="brand"><span class="dot"></span><span>Aula 5 · Prep</span></div>
+    <h1>Painel de Missão</h1>
+    <div class="sub">Sensoriamento Remoto — fundamentos</div>
+
+    <div class="group-label">Antes da técnica</div>
+    <ul class="navlist">
+      <li><a href="#m1"><span class="n">01</span> Paradigmas de O.T.</a></li>
+    </ul>
+
+    <div class="group-label">Do pixel bruto ao dado utilizável</div>
+    <ul class="navlist">
+      <li><a href="#m2"><span class="n">02</span> Correções geométricas</a></li>
+      <li><a href="#m3"><span class="n">03</span> Correções atmosféricas</a></li>
+      <li><a href="#m4"><span class="n">04</span> Analysis-Ready Data (ARD)</a></li>
+    </ul>
+
+    <div class="group-label">Extraindo informação</div>
+    <ul class="navlist">
+      <li><a href="#m5"><span class="n">05</span> Índices espectrais</a></li>
+    </ul>
+
+    <div class="group-label">Encontrando o dado</div>
+    <ul class="navlist">
+      <li><a href="#m6"><span class="n">06</span> STAC</a></li>
+    </ul>
+
+    <div class="group-label">Antes de tudo</div>
+    <ul class="navlist">
+      <li><a href="#glossario"><span class="n">✦</span> Glossário rápido</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">Preparação — não é material oficial do curso</span>
+      <h1>Sensoriamento Remoto: dos fundamentos ao STAC</h1>
+      <p>Cinco conceitos que a aula de hoje à noite vai cobrir, explicados antes de você chegar lá: paradigmas de observação da Terra, correções geométricas e atmosféricas, Analysis-Ready Data, índices espectrais e STAC. Pensado pra você reconhecer os termos e já ter a intuição de como eles se encaixam.</p>
+      <div class="status-strip">
+        <span class="chip">6 blocos + glossário</span>
+        <span class="chip">conhecimento geral da área, não do repositório do curso</span>
+        <span class="chip">foco em conceito + código de referência</span>
+      </div>
+    </div>
+
+    <div class="source-note">
+      <h3>⚠ De onde isso vem</h3>
+      <p>Diferente dos guias anteriores (Steps 1-3), <strong>nada disso foi extraído dos repositórios ou das transcrições que você enviou</strong> — conferi de novo e nenhuma das duas fontes cobre ARD, correções, índices ou STAC. As três transcrições de aula continuam ilegíveis (ruído de transcrição), e as seções do ebook que poderiam abordar isso (<code class="inline">state-of-art/</code>, <code class="inline">guest-sessions/</code>) estão marcadas "em construção" no próprio repositório.</p>
+      <p>Este conteúdo é conhecimento estabelecido da área de sensoriamento remoto (não é proprietário nem específico do seu curso) — construído pra você chegar preparado, mas não é um resumo do que o professor vai dizer hoje. Onde os termos exatos que o professor usar divergirem do que está aqui, confie no professor.</p>
+    </div>
+
+    <!-- MODULE 1 -->
+    <details class="lesson" id="m1" open>
+      <summary><span class="midx">01</span><h2>Paradigmas da Observação da Terra</h2><span class="tag">contexto</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> entender as decisões de design por trás de qualquer sensor orbital, e por que elas importam pra que tipo de análise você consegue fazer.</div>
+        <h3>Passivo vs. Ativo</h3>
+        <ul>
+          <li><strong>Sensores passivos</strong> (óptico/multiespectral, térmico) medem energia refletida ou emitida — dependem da luz do sol (ou calor da própria Terra). Sem sol, sem imagem útil de dia — é por isso que imagens ópticas ficam "sujas" com nuvem.</li>
+          <li><strong>Sensores ativos</strong> (radar/SAR, LiDAR) emitem seu próprio sinal e medem o retorno. Funcionam de noite e atravessam nuvem — trade-off: processamento mais complexo, e a "imagem" não é uma foto no sentido intuitivo.</li>
+        </ul>
+        <h3>As 4 resoluções — e o trade-off entre elas</h3>
+        <table class="reftable">
+          <tr><th>Resolução</th><th>O que mede</th><th>Exemplo</th></tr>
+          <tr><td>Espacial</td><td>Tamanho do pixel no chão</td><td>Sentinel-2: 10-20m · Landsat: 30m · Planet: ~3m</td></tr>
+          <tr><td>Espectral</td><td>Número e largura de bandas medidas</td><td>Landsat 8: 11 bandas · Sentinel-2: 13 bandas · hiperespectral: centenas</td></tr>
+          <tr><td>Temporal</td><td>Frequência de revisita do mesmo lugar</td><td>Sentinel-2: ~5 dias · Landsat: 16 dias · MODIS: diário</td></tr>
+          <tr><td>Radiométrica</td><td>Sensibilidade a variações de intensidade (bits por pixel)</td><td>8-bit (256 níveis) vs. 12/16-bit (milhares de níveis)</td></tr>
+        </table>
+        <div class="callout">Nenhum sensor maximiza as quatro ao mesmo tempo — é sempre engenharia de trade-off. Um satélite de altíssima resolução espacial (Planet, ~3m) tipicamente sacrifica resolução espectral; um sensor hiperespectral de laboratório orbital tende a ter pixel maior e revisita mais lenta.</div>
+        <h3>Órbita e varredura</h3>
+        <ul>
+          <li>A maioria dos satélites de observação da Terra usa <strong>órbita heliossíncrona</strong> (sun-synchronous) — passa sobre o mesmo ponto sempre no mesmo horário local solar, o que mantém condições de iluminação comparáveis entre passagens.</li>
+          <li><strong>Push-broom</strong> (linha de sensores fixa, a órbita "varre" a cena) é o padrão atual (Landsat, Sentinel-2) — mais estável geometricamente que o antigo <strong>whisk-broom</strong> (espelho oscilante).</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- MODULE 2 -->
+    <details class="lesson" id="m2">
+      <summary><span class="midx">02</span><h2>Correções geométricas</h2><span class="tag">pré-processamento</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> entender por que um pixel bruto de satélite não está "no lugar certo" até passar por correção — e o que resolve isso.</div>
+        <h3>Por que a imagem crua vem distorcida</h3>
+        <ul>
+          <li>Curvatura da Terra e ângulo de visada do sensor (pixels nas bordas da faixa imageada "veem" o chão em ângulo, não perpendicularmente).</li>
+          <li>Relevo do terreno — um morro aparece deslocado da sua posição real (efeito parecido com paralaxe), chamado <strong>deslocamento de relevo</strong>.</li>
+          <li>Atitude da plataforma (pequenas variações de posição/orientação do satélite durante a captura).</li>
+        </ul>
+        <h3>Georreferenciamento vs. Ortorretificação</h3>
+        <table class="reftable">
+          <tr><th>Termo</th><th>O que faz</th></tr>
+          <tr><td>Georreferenciamento</td><td>Associa coordenadas reais à imagem usando pontos de controle (GCPs) ou efemérides do satélite — corrige posição, não relevo</td></tr>
+          <tr><td>Ortorretificação</td><td>Além de georreferenciar, corrige o deslocamento de relevo usando um <strong>MDE/DEM</strong> (Modelo Digital de Elevação) — o resultado tem escala uniforme em toda a cena, como um mapa</td></tr>
+        </table>
+        <div class="callout accent">É essa correção que garante que um pixel na imagem do Sentinel-2 e o mesmo local na imagem do Landsat caiam exatamente na mesma coordenada — pré-requisito pra qualquer <code class="inline">sjoin</code> ou overlay que você já viu nos módulos anteriores fazer sentido com dado de satélite.</div>
+      </div>
+    </details>
+
+    <!-- MODULE 3 -->
+    <details class="lesson" id="m3">
+      <summary><span class="midx">03</span><h2>Correções atmosféricas</h2><span class="tag">pré-processamento</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> entender a diferença entre "o que o sensor mediu" e "o que realmente está no chão", e por que isso trava qualquer comparação entre datas.</div>
+        <h3>O caminho do sinal</h3>
+        <p>A luz do sol atravessa a atmosfera duas vezes (na ida até o chão e na volta até o sensor) — no caminho, sofre <strong>espalhamento</strong> (Rayleigh, por moléculas de ar; Mie, por aerossóis/poeira) e <strong>absorção</strong> (vapor d'água, ozônio, CO₂). O sensor não mede a reflectância real da superfície — mede um sinal contaminado pela atmosfera.</p>
+        <h3>A cadeia de conversão</h3>
+        <table class="reftable">
+          <tr><th>Etapa</th><th>O que é</th></tr>
+          <tr><td>DN (Digital Number)</td><td>Valor bruto do pixel, sem unidade física — só um inteiro da captura do sensor</td></tr>
+          <tr><td>Radiância</td><td>DN convertido pra energia física (W/m²/sr/µm) usando coeficientes de calibração do sensor</td></tr>
+          <tr><td>Reflectância TOA</td><td>(Top of Atmosphere) — radiância normalizada pela irradiância solar; ainda inclui efeito atmosférico</td></tr>
+          <tr><td>Reflectância de superfície (BOA/SR)</td><td>(Bottom/Surface of Atmosphere) — efeito atmosférico removido; é o que a superfície "realmente reflete"</td></tr>
+        </table>
+        <div class="callout important">Comparar NDVI de duas datas usando reflectância TOA é um erro comum — a quantidade de vapor d'água/aerossol muda dia a dia, então parte da diferença que você mede pode ser atmosfera, não vegetação. Séries temporais sempre exigem reflectância de superfície.</div>
+        <h3>Algoritmos comuns</h3>
+        <ul>
+          <li><strong>Sen2Cor</strong> — processador oficial da ESA pra Sentinel-2 (gera o produto L2A).</li>
+          <li><strong>LaSRC</strong> — usado pelo USGS pra gerar produtos de superfície do Landsat.</li>
+          <li><strong>6S</strong> (Second Simulation of a Satellite Signal in the Solar Spectrum) — modelo de transferência radiativa usado como base teórica por vários processadores.</li>
+          <li><strong>DOS</strong> (Dark Object Subtraction) — método simples, sem modelo atmosférico completo: assume que pixels muito escuros (sombra, água profunda) deveriam refletir ~0, e qualquer valor acima disso é atribuído à atmosfera.</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- MODULE 4 -->
+    <details class="lesson" id="m4">
+      <summary><span class="midx">04</span><h2>Analysis-Ready Data (ARD)</h2><span class="tag">o encontro dos dois anteriores</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> entender o que torna um produto de satélite "pronto pra análise" em vez de só "uma imagem" — e por que isso é o que possibilita os data cubes que o ecossistema geoespacial brasileiro (Brazil Data Cube, citado no Módulo 21 do guia anterior) foi construído em cima.</div>
+        <p><strong>ARD</strong> é dado que já passou pelas correções geométrica e atmosférica (Módulos 02 e 03), está numa grade/projeção padronizada, tem máscara de nuvem/sombra aplicada, e vem com metadados consistentes — pronto pra empilhar e analisar sem o usuário ter que reprocessar do zero.</p>
+        <h3>O que o padrão CEOS-ARD exige, na prática</h3>
+        <ul>
+          <li>Correção geométrica/ortorretificação com precisão sub-pixel</li>
+          <li>Conversão pra reflectância de superfície (não TOA)</li>
+          <li>Grade espacial fixa e projeção consistente entre cenas (permite empilhar imagens de datas diferentes pixel a pixel)</li>
+          <li>Máscara de qualidade — nuvem, sombra de nuvem, neve, água — por pixel</li>
+          <li>Metadados padronizados (STAC entra exatamente aqui, veja Módulo 06)</li>
+        </ul>
+        <table class="reftable">
+          <tr><th>Exemplo real</th><th>Provedor</th></tr>
+          <tr><td>Landsat Collection 2 Level-2</td><td>USGS</td></tr>
+          <tr><td>Sentinel-2 L2A</td><td>ESA / Copernicus</td></tr>
+          <tr><td>Brazil Data Cube</td><td>INPE — já citado no ecossistema geoespacial que vocês mapearam na Aula 1</td></tr>
+        </table>
+        <div class="callout accent">O ganho prático: sem ARD, cada pessoa que quer comparar duas cenas de datas diferentes precisa reimplementar correção geométrica e atmosférica do zero — ARD move esse custo pro provedor de dados, uma vez só, pra todo mundo usar.</div>
+      </div>
+    </details>
+
+    <!-- MODULE 5 -->
+    <details class="lesson" id="m5">
+      <summary><span class="midx">05</span><h2>Índices espectrais</h2><span class="tag">extração de informação</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> calcular e interpretar os índices espectrais mais usados — a aplicação direta do módulo de NumPy/band math que você já viu.</div>
+        <p>A lógica geral é a <strong>diferença normalizada</strong>: pegar duas bandas que respondem de forma oposta a um fenômeno, e normalizar a diferença entre -1 e 1.</p>
+        <table class="reftable">
+          <tr><th>Índice</th><th>Fórmula</th><th>Detecta</th></tr>
+          <tr><td>NDVI</td><td>(NIR − Red) / (NIR + Red)</td><td>Vegetação (folha viva reflete muito NIR, absorve Red pra fotossíntese)</td></tr>
+          <tr><td>NDWI</td><td>(Green − NIR) / (Green + NIR)</td><td>Água (água absorve NIR fortemente)</td></tr>
+          <tr><td>NDBI</td><td>(SWIR − NIR) / (SWIR + NIR)</td><td>Área construída/urbana</td></tr>
+          <tr><td>NBR</td><td>(NIR − SWIR) / (NIR + SWIR)</td><td>Área queimada (comparar antes/depois = dNBR)</td></tr>
+          <tr><td>SAVI</td><td>((NIR−Red)/(NIR+Red+L))×(1+L), L≈0.5</td><td>Vegetação com solo exposto de fundo — corrige o "ruído" do solo que o NDVI simples sofre em áreas de baixa cobertura</td></tr>
+          <tr><td>EVI</td><td>G×(NIR−Red)/(NIR+C1×Red−C2×Blue+L)</td><td>Vegetação, mais robusto que NDVI em áreas de dossel denso e menos sensível a resíduo atmosférico</td></tr>
+        </table>
+        <h3>Exemplo resolvido — o mesmo band math do Módulo 07 (NumPy)</h3>
+        <pre><code class="language-python">import numpy as np
+import rasterio
+
+with rasterio.open("sentinel2_B04.tif") as src:  # Red
+    red = src.read(1).astype("float32")
+with rasterio.open("sentinel2_B08.tif") as src:  # NIR
+    nir = src.read(1).astype("float32")
+
+ndvi = (nir - red) / (nir + red + 1e-10)  # + epsilon evita divisão por zero
+print(f"NDVI médio: {ndvi.mean():.3f} | pixels de vegetação (>0.3): {(ndvi > 0.3).sum()}")</code></pre>
+        <div class="callout important">Todo índice espectral calculado sobre dado <strong>não corrigido atmosfericamente</strong> carrega o mesmo viés que qualquer outra medida direta da cena — é por isso que os Módulos 03 e 04 vêm antes deste na ordem lógica, mesmo que na prática você "só" rode a fórmula no fim.</div>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercícios (originais, não do repositório)</span>
+          <div class="exercise">
+            <span class="exnum">5.1</span>
+            Por que o NDVI usa NIR e Red especificamente, e não duas bandas visíveis quaisquer (ex: Red e Blue)?
+            <details><summary>ver solução</summary>
+              <p>Clorofila ativa absorve fortemente luz vermelha (fotossíntese) e a estrutura celular da folha reflete fortemente o infravermelho próximo — o contraste entre essas duas bandas é o que dá sinal forte e específico de vegetação viva. Duas bandas visíveis não têm esse contraste tão marcado e específico à fisiologia da planta.</p>
+            </details>
+          </div>
+          <div class="exercise">
+            <span class="exnum">5.2</span>
+            Calcule o NBR de duas datas (antes/depois de um incêndio) e explique como interpretar <code class="inline">dNBR = NBR_antes - NBR_depois</code>.
+            <details><summary>ver solução</summary>
+<pre><code class="language-python">nbr_antes = (nir_antes - swir_antes) / (nir_antes + swir_antes)
+nbr_depois = (nir_depois - swir_depois) / (nir_depois + swir_depois)
+dnbr = nbr_antes - nbr_depois</code></pre>
+              <p>Valores altos de <code class="inline">dNBR</code> indicam queda grande de NBR entre as datas — ou seja, área queimada com severidade alta. dNBR próximo de zero indica pouca ou nenhuma mudança.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- MODULE 6 -->
+    <details class="lesson" id="m6">
+      <summary><span class="midx">06</span><h2>STAC — SpatioTemporal Asset Catalog</h2><span class="tag">descoberta de dado</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> buscar e filtrar imagens de satélite programaticamente, sem baixar catálogos inteiros ou navegar site por site.</div>
+        <h3>O problema que resolve</h3>
+        <p>Antes do STAC, cada provedor de imagem (USGS, ESA, INPE, empresas privadas) tinha seu próprio formato de metadado e sua própria API de busca. STAC é uma <strong>especificação aberta e comum</strong> pra descrever "isso aqui é uma imagem de satélite, tirada nesse lugar, nessa data, com esses metadados" — de forma que uma ferramenta só sabe consultar qualquer catálogo que siga o padrão.</p>
+        <h3>Vocabulário STAC</h3>
+        <table class="reftable">
+          <tr><th>Termo</th><th>O que é</th></tr>
+          <tr><td><strong>Item</strong></td><td>Uma cena/observação — geometria (bbox/footprint), data, metadados, e links pros arquivos reais (assets)</td></tr>
+          <tr><td><strong>Asset</strong></td><td>Um arquivo dentro do Item — cada banda espectral costuma ser um asset separado</td></tr>
+          <tr><td><strong>Collection</strong></td><td>Um grupo de Items da mesma fonte/produto (ex: "sentinel-2-l2a")</td></tr>
+          <tr><td><strong>Catalog</strong></td><td>A raiz — organiza Collections e/ou Items, pode apontar pra outros catálogos</td></tr>
+        </table>
+        <h3>Exemplo resolvido — buscando Sentinel-2 com pouca nuvem</h3>
+        <pre><code class="language-python">from pystac_client import Client
+
+catalogo = Client.open("https://earth-search.aws.element84.com/v1")
+
+busca = catalogo.search(
+    collections=["sentinel-2-l2a"],
+    bbox=[-49.5, -28.2, -48.0, -27.0],   # bbox perto de Florianópolis
+    datetime="2026-06-01/2026-08-31",
+    query={"eo:cloud_cover": {"lt": 10}},  # menos de 10% de nuvem
+)
+
+items = list(busca.items())
+print(f"{len(items)} cenas encontradas")
+
+item = items[0]
+print(item.datetime, item.properties["eo:cloud_cover"])
+print(item.assets["red"].href)   # URL direta do asset da banda vermelha</code></pre>
+        <p>Catálogos STAC públicos reais: <a href="https://planetarycomputer.microsoft.com/catalog" target="_blank">Microsoft Planetary Computer</a>, <a href="https://earth-search.aws.element84.com/v1" target="_blank">Element84 Earth Search</a>, e o próprio <a href="https://data.inpe.br/bdc/explorer" target="_blank">Brazil Data Cube</a> (já mapeado no Módulo 21 do guia anterior como provedor de satélites/plano de órbita).</p>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercícios (originais, não do repositório)</span>
+          <div class="exercise">
+            <span class="exnum">6.1</span>
+            Por que buscar por <code class="inline">eo:cloud_cover</code> antes de baixar qualquer imagem é uma prática melhor do que baixar tudo e filtrar depois?
+            <details><summary>ver solução</summary>
+              <p>Imagens de satélite são pesadas (cada banda pode ter dezenas a centenas de MB). Filtrar por metadado <em>antes</em> de baixar evita transferir gigabytes de cena majoritariamente encoberta por nuvem que você vai descartar de qualquer forma — o STAC existe justamente pra permitir esse filtro no lado do servidor.</p>
+            </details>
+          </div>
+          <div class="exercise">
+            <span class="exnum">6.2</span>
+            Qual a relação entre um STAC <strong>Item</strong> e o conceito de <strong>feição</strong> (feature) que vocês viram com Fiona? (dica: pense em geometria + atributos + arquivo associado)
+            <details><summary>ver solução</summary>
+              <p>São conceitualmente parecidos: uma feição Fiona é geometria + atributos; um Item STAC é geometria (footprint da cena) + atributos (data, nuvem, sensor) + a diferença extra de apontar pra arquivos reais (assets) em vez de só guardar dados tabulares. STAC é, em certo sentido, "GeoJSON de feições com anexos".</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- GLOSSARY -->
+    <details class="lesson" id="glossario">
+      <summary><span class="midx">✦</span><h2>Glossário rápido — termos que vão aparecer soltos hoje</h2><span class="tag">consulta</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <table class="reftable">
+          <tr><th>Termo</th><th>Significado direto</th></tr>
+          <tr><td>DN</td><td>Digital Number — valor bruto de pixel, sem unidade física</td></tr>
+          <tr><td>TOA</td><td>Top of Atmosphere — reflectância medida no topo da atmosfera, ainda com efeito atmosférico</td></tr>
+          <tr><td>BOA / SR</td><td>Bottom of Atmosphere / Surface Reflectance — reflectância já corrigida, "o que o chão realmente reflete"</td></tr>
+          <tr><td>ARD</td><td>Analysis-Ready Data — dado já pré-processado (geometria + atmosfera + máscara + metadado padronizado)</td></tr>
+          <tr><td>SAR</td><td>Synthetic Aperture Radar — sensor ativo, atravessa nuvem, não depende de luz solar</td></tr>
+          <tr><td>MDE / DEM</td><td>Modelo Digital de Elevação — usado pra ortorretificação</td></tr>
+          <tr><td>GCP</td><td>Ground Control Point — ponto de coordenada conhecida usado pra georreferenciar</td></tr>
+          <tr><td>STAC</td><td>SpatioTemporal Asset Catalog — padrão aberto de metadado pra buscar imagens de satélite</td></tr>
+          <tr><td>Data cube</td><td>Empilhamento de cenas ARD numa grade espaço-temporal única, pronta pra análise de série temporal</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <footer>
+      Preparação construída a partir de conhecimento geral e estabelecido da área de sensoriamento remoto — não extraída dos repositórios ou transcrições do bootcamp, que não cobrem esses tópicos até o momento. Ajuste mentalmente contra o que o professor apresentar hoje à noite.
+    </footer>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script>
+  hljs.highlightAll();
+  document.getElementById('menubtn').addEventListener('click', function(){
+    document.getElementById('sidenav').classList.toggle('open');
+  });
+  document.querySelectorAll('.navlist a').forEach(function(a){
+    a.addEventListener('click', function(){
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if(el && !el.open){ el.open = true; }
+      document.getElementById('sidenav').classList.remove('open');
+    });
+  });
+</script>
+</body>
+</html>

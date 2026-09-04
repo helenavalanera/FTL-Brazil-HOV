@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Curso — Python para Dados Geoespaciais · FTL Brasil</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a1220; --panel:#101b30; --panel-2:#16233c; --line:#223256;
+    --text:#e7ecf5; --text-dim:#8ea0c2; --accent:#5eead4; --accent-dim:#2f6f66;
+    --amber:#f5a524; --amber-dim:#6b4b16; --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:radial-gradient(circle at 15% 0%, rgba(94,234,212,0.06), transparent 40%), radial-gradient(circle at 85% 10%, rgba(245,165,36,0.05), transparent 35%), var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; line-height:1.55;}
+  .grid-overlay{position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.35; background-image:linear-gradient(rgba(94,234,212,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(94,234,212,.035) 1px, transparent 1px); background-size:42px 42px; mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent 70%);}
+  h1,h2,h3,h4{font-family:'Space Grotesk', sans-serif; margin:0 0 .4em;}
+  code, pre, .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:var(--accent);}
+  .shell{display:flex; min-height:100vh; position:relative; z-index:1;}
+  nav.side{width:280px; flex:none; position:sticky; top:0; align-self:flex-start; height:100vh; overflow-y:auto; padding:26px 18px 26px 22px; border-right:1px solid var(--line); background:linear-gradient(180deg, var(--panel), var(--bg));}
+  nav.side::-webkit-scrollbar{width:6px;}
+  nav.side::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .brand{display:flex; align-items:center; gap:9px; margin-bottom:6px;}
+  .brand .dot{width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); animation:pulse 2.4s infinite ease-in-out;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.35;}}
+  .brand span{font-family:'Space Grotesk'; font-weight:600; font-size:.8rem; letter-spacing:1.5px; color:var(--text-dim); text-transform:uppercase;}
+  .side h1{font-size:1.1rem; margin-bottom:2px;}
+  .side .sub{color:var(--text-dim); font-size:.8rem; margin-bottom:18px;}
+  .navlist{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:1px;}
+  .navlist li a{display:flex; gap:9px; align-items:baseline; text-decoration:none; color:var(--text-dim); font-size:.82rem; padding:6px 8px; border-radius:7px; transition:.15s;}
+  .navlist li a:hover{background:var(--panel-2); color:var(--text);}
+  .navlist li a .n{font-family:'IBM Plex Mono'; font-size:.68rem; color:var(--accent); flex:none; width:22px;}
+  .navlist .group-label{font-size:.65rem; text-transform:uppercase; letter-spacing:1.6px; color:var(--text-dim); opacity:.55; margin:13px 0 4px 8px;}
+  .gitbtn{margin-top:18px; width:100%; padding:10px 12px; border-radius:9px; border:1px solid var(--amber-dim); background:rgba(245,165,36,0.08); color:var(--amber); font-family:'IBM Plex Mono'; font-size:.74rem; cursor:pointer; display:flex; align-items:center; gap:8px; justify-content:center;}
+  .gitbtn:hover{background:rgba(245,165,36,0.16);}
+  main{flex:1; min-width:0; padding:44px 48px 120px;}
+  .hero{max-width:840px; margin-bottom:26px;}
+  .eyebrow{font-family:'IBM Plex Mono'; color:var(--accent); font-size:.76rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; display:block;}
+  .hero h1{font-size:2.2rem; line-height:1.1;}
+  .hero p{color:var(--text-dim); font-size:.98rem; max-width:670px;}
+  .status-strip{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;}
+  .chip{font-family:'IBM Plex Mono'; font-size:.7rem; padding:6px 11px; border-radius:100px; border:1px solid var(--line); color:var(--text-dim);}
+
+  .phase-title{max-width:840px; margin:38px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:12px;}
+  .phase-title h2{font-size:1.35rem; color:var(--accent);}
+  .phase-title span{font-family:'IBM Plex Mono'; font-size:.74rem; color:var(--text-dim);}
+  .phase-title:first-of-type{margin-top:0;}
+
+  section.lesson{max-width:840px; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:16px; overflow:hidden; background:linear-gradient(180deg, var(--panel), var(--panel-2)); scroll-margin-top:26px;}
+  section.lesson > summary{list-style:none; cursor:pointer; padding:18px 22px; display:flex; align-items:center; gap:14px;}
+  section.lesson > summary::-webkit-details-marker{display:none;}
+  .midx{font-family:'IBM Plex Mono'; color:var(--accent); font-size:.8rem; border:1px solid var(--accent-dim); border-radius:6px; padding:3px 8px; flex:none;}
+  section.lesson > summary h2{font-size:1.06rem; flex:1;}
+  section.lesson > summary .tag{font-family:'IBM Plex Mono'; font-size:.65rem; color:var(--text-dim); border:1px solid var(--line); padding:3px 9px; border-radius:100px; white-space:nowrap;}
+  .chev{color:var(--text-dim); transition:.2s; flex:none;}
+  section.lesson[open] > summary .chev{transform:rotate(90deg);}
+  .lbody{padding:0 22px 24px; border-top:1px solid var(--line);}
+  .objetivo{margin-top:16px; font-size:.88rem; color:var(--accent); background:rgba(94,234,212,.05); border:1px solid var(--accent-dim); border-radius:8px; padding:9px 13px;}
+  .objetivo b{color:var(--accent);}
+  .lbody h3{color:var(--accent); text-transform:uppercase; letter-spacing:.6px; font-size:.72rem; margin-top:18px;}
+  .lbody ul{padding-left:20px; margin:9px 0;}
+  .lbody li{margin-bottom:5px; color:#d7deec;}
+  .lbody p{color:#d7deec;}
+  pre{background:#0c1729 !important; border:1px solid var(--line); border-radius:8px; padding:12px 15px; overflow-x:auto; font-size:.79rem; margin:9px 0;}
+  code.inline{background:var(--panel-2); border:1px solid var(--line); padding:1px 6px; border-radius:5px; font-size:.85em;}
+
+  table.reftable{width:100%; border-collapse:collapse; margin:9px 0; font-size:.79rem;}
+  table.reftable th, table.reftable td{border:1px solid var(--line); padding:6px 9px; text-align:left; color:#d7deec;}
+  table.reftable th{background:var(--panel-2); color:var(--accent); font-family:'IBM Plex Mono'; font-size:.66rem; text-transform:uppercase; letter-spacing:.4px;}
+
+  .callout{border-left:3px solid var(--amber); background:rgba(245,165,36,.06); border-radius:0 8px 8px 0; padding:8px 12px; margin:9px 0; font-size:.84rem; color:#d7deec;}
+  .callout.important{border-left-color:#f0645c; background:rgba(240,100,92,.06);}
+
+  .exlist{margin-top:14px; padding-top:12px; border-top:1px dashed var(--line);}
+  .exlist > .exlabel-main{font-family:'IBM Plex Mono'; font-size:.72rem; color:var(--amber); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:block;}
+  .exercise{margin-bottom:10px; border:1px dashed var(--accent-dim); border-radius:8px; padding:11px 14px; background:rgba(94,234,212,0.03);}
+  .exercise .exnum{font-family:'IBM Plex Mono'; font-size:.7rem; color:var(--accent); margin-bottom:5px; display:block;}
+  .exercise details{margin-top:8px;}
+  .exercise summary{cursor:pointer; color:var(--amber); font-family:'IBM Plex Mono'; font-size:.74rem; list-style:none;}
+  .exercise summary::-webkit-details-marker{display:none;}
+  .exercise summary::before{content:"▸ ";}
+  .exercise details[open] summary::before{content:"▾ ";}
+
+  .course-card{max-width:840px; border:1px solid var(--line); border-radius:10px; padding:16px 20px; margin-bottom:14px; background:linear-gradient(180deg, var(--panel), var(--panel-2));}
+  .course-card h3{font-size:1rem; color:var(--text); margin-bottom:4px;}
+  .course-card .meta{font-family:'IBM Plex Mono'; font-size:.7rem; color:var(--accent); margin-bottom:8px; display:block;}
+  .course-card p{color:#d7deec; font-size:.86rem; margin:0 0 8px;}
+  .course-card a.link{font-family:'IBM Plex Mono'; font-size:.78rem;}
+
+  footer{max-width:840px; color:var(--text-dim); font-size:.8rem; padding-top:18px; border-top:1px solid var(--line); margin-top:10px;}
+
+  #gitpanel{position:fixed; right:24px; bottom:24px; width:380px; max-height:72vh; overflow-y:auto; background:linear-gradient(180deg, #14203a, #0c1526); border:1px solid var(--amber-dim); border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,0.55); z-index:50; display:none;}
+  #gitpanel.open{display:block;}
+  #gitpanel .gp-head{display:flex; align-items:center; justify-content:space-between; padding:14px 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:#0c1526;}
+  #gitpanel .gp-head h3{font-size:.88rem; color:var(--amber); margin:0; font-family:'IBM Plex Mono';}
+  #gitpanel .gp-close{background:none; border:none; color:var(--text-dim); cursor:pointer; font-size:1.1rem;}
+  #gitpanel .gp-body{padding:6px 16px 16px;}
+  .gitcmd{margin:11px 0; padding-bottom:9px; border-bottom:1px solid var(--line);}
+  .gitcmd:last-child{border-bottom:none;}
+  .gitcmd .label{font-size:.75rem; color:var(--text-dim); margin-bottom:4px;}
+  .gitcmd code{display:block; background:#0a1220; border:1px solid var(--line); padding:7px 10px; border-radius:6px; font-size:.77rem; color:var(--accent);}
+  .fab{position:fixed; right:24px; bottom:24px; z-index:49; width:52px; height:52px; border-radius:50%; background:var(--amber); color:#1a1206; border:none; cursor:pointer; font-family:'IBM Plex Mono'; font-weight:700; box-shadow:0 8px 24px rgba(245,165,36,0.35); font-size:.7rem;}
+  .fab.hidden{display:none;}
+
+  @media (max-width: 880px){
+    nav.side{position:fixed; left:-290px; z-index:60; transition:.25s; box-shadow:0 0 40px rgba(0,0,0,.6);}
+    nav.side.open{left:0;}
+    main{padding:70px 18px 120px;}
+    .hero h1{font-size:1.6rem;}
+    #gitpanel{width:calc(100% - 32px); right:16px;}
+    .fab{right:16px;}
+    .menubtn{display:flex !important;}
+  }
+  .menubtn{display:none; position:fixed; top:14px; left:14px; z-index:61; background:var(--panel-2); border:1px solid var(--line); color:var(--text); width:40px; height:40px; border-radius:8px; align-items:center; justify-content:center; cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="grid-overlay"></div>
+<button class="menubtn" id="menubtn">☰</button>
+
+<div class="shell">
+  <nav class="side" id="sidenav">
+    <div class="brand"><span class="dot"></span><span>Curso Completo</span></div>
+    <h1>Painel de Missão</h1>
+    <div class="sub">Python + GIS · do zero ao caso real</div>
+
+    <div class="group-label">Módulo I — Fundamentos Python</div>
+    <ul class="navlist">
+      <li><a href="#m1"><span class="n">01</span> Variáveis e condicionais</a></li>
+      <li><a href="#m2"><span class="n">02</span> Funções e loops</a></li>
+      <li><a href="#m3"><span class="n">03</span> Strings e arquivos</a></li>
+      <li><a href="#m4"><span class="n">04</span> Listas, dicts, tuplas</a></li>
+      <li><a href="#m5"><span class="n">05</span> Pandas</a></li>
+      <li><a href="#m6"><span class="n">06</span> Classes e POO</a></li>
+      <li><a href="#m7"><span class="n">07</span> NumPy</a></li>
+      <li><a href="#m8"><span class="n">08</span> SQLite</a></li>
+    </ul>
+
+    <div class="group-label">Módulo II — Dados Geoespaciais</div>
+    <ul class="navlist">
+      <li><a href="#m9"><span class="n">09</span> Shapely — geometrias</a></li>
+      <li><a href="#m10"><span class="n">10</span> GeoPandas — de CSV a mapa</a></li>
+      <li><a href="#m11"><span class="n">11</span> CRS e projeções</a></li>
+      <li><a href="#m12"><span class="n">12</span> H3 — grades hexagonais</a></li>
+      <li><a href="#m13"><span class="n">13</span> Fiona</a></li>
+    </ul>
+
+    <div class="group-label">Módulo III — Análise Espacial</div>
+    <ul class="navlist">
+      <li><a href="#m14"><span class="n">14</span> Spatial join</a></li>
+      <li><a href="#m15"><span class="n">15</span> Overlay</a></li>
+      <li><a href="#m16"><span class="n">16</span> Buffer, hull, dissolve</a></li>
+      <li><a href="#m17"><span class="n">17</span> Topologia e distância</a></li>
+      <li><a href="#m18"><span class="n">18</span> Agregação espacial</a></li>
+    </ul>
+
+    <div class="group-label">Módulo IV — Casos reais &amp; contexto</div>
+    <ul class="navlist">
+      <li><a href="#m19"><span class="n">19</span> Caso: Alagoas</a></li>
+      <li><a href="#m20"><span class="n">20</span> Caso: Sinop</a></li>
+      <li><a href="#m21"><span class="n">21</span> Ecossistema &amp; provedores</a></li>
+    </ul>
+
+    <div class="group-label">Continue estudando</div>
+    <ul class="navlist">
+      <li><a href="#m22"><span class="n">↗</span> Cursos gratuitos</a></li>
+    </ul>
+
+    <button class="gitbtn" onclick="toggleGit(true)">⌥ git cheatsheet</button>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">Future Tech Leaders · Space Tech Bootcamp</span>
+      <h1>Python para Dados Geoespaciais</h1>
+      <p>Curso completo — 21 aulas organizadas em 4 módulos, do zero em Python até análise espacial aplicada a dados reais do IBGE. Cada aula tem objetivo de aprendizagem, conteúdo explicado, um exemplo resolvido e exercícios com solução comentada. Termina com uma trilha de cursos gratuitos pra continuar depois do bootcamp.</p>
+      <div class="status-strip">
+        <span class="chip">21 aulas + trilha de continuidade</span>
+        <span class="chip">2 exercícios por aula, com solução</span>
+        <span class="chip">git cheatsheet fixo</span>
+      </div>
+    </div>
+
+    <!-- ================= MÓDULO I ================= -->
+    <div class="phase-title"><h2>Módulo I — Fundamentos Python</h2><span>a base da linguagem</span></div>
+
+    <details class="lesson" id="m1" open>
+      <summary><span class="midx">01</span><h2>Variáveis, tipos e condicionais</h2><span class="tag">Aula 1</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> declarar variáveis dos tipos básicos, converter entre tipos e controlar o fluxo do programa com <code class="inline">if/elif/else</code>.</div>
+        <h3>Conteúdo</h3>
+        <ul>
+          <li>Variável é um rótulo pra um valor — Python infere o tipo (tipagem dinâmica). Tipos: <code class="inline">int</code>, <code class="inline">float</code>, <code class="inline">str</code>, <code class="inline">bool</code>.</li>
+          <li>Conversão explícita com <code class="inline">int()</code>, <code class="inline">float()</code>, <code class="inline">str()</code>. Operadores aritméticos, de comparação e lógicos.</li>
+          <li><code class="inline">if / elif / else</code> — a indentação (4 espaços) define o bloco, não chaves.</li>
+        </ul>
+        <h3>Exemplo resolvido</h3>
+        <p>Classificar a altitude de um satélite:</p>
+        <pre><code class="language-python">altitude_km = 408
+em_orbita = altitude_km > 160  # bool: True
+
+if em_orbita and altitude_km < 2000:
+    print("Órbita baixa (LEO)")
+elif em_orbita:
+    print("Órbita alta")
+else:
+    print("Ainda em ascensão")
+# saída: "Órbita baixa (LEO)"</code></pre>
+        <p>Repare que <code class="inline">em_orbita</code> guarda o resultado de uma comparação — já é um <code class="inline">bool</code>, não precisa reescrever a condição.</p>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercícios</span>
+          <div class="exercise">
+            <span class="exnum">1.1</span>
+            Classifique um IMC (<code class="inline">peso / altura**2</code>) em "abaixo do peso" (&lt;18.5), "normal" (18.5–24.9), "sobrepeso" (25–29.9) ou "obesidade" (≥30).
+            <details><summary>ver solução</summary>
+<pre><code class="language-python">peso, altura = 68, 1.70
+imc = peso / altura ** 2
+if imc < 18.5: categoria = "abaixo do peso"
+elif imc < 25: categoria = "normal"
+elif imc < 30: categoria = "sobrepeso"
+else: categoria = "obesidade"
+print(f"IMC {imc:.1f} → {categoria}")</code></pre>
+            </details>
+          </div>
+          <div class="exercise">
+            <span class="exnum">1.2 — pegadinha</span>
+            O que <code class="inline">"10" + "5"</code> retorna? E <code class="inline">int("10") + int("5")</code>? Por que Python não deixa somar <code class="inline">"10" + 5</code> direto?
+            <details><summary>ver solução</summary>
+              <p><code class="inline">"10" + "5"</code> → <code class="inline">"105"</code> (concatenação). <code class="inline">int("10") + int("5")</code> → <code class="inline">15</code>. Python não converte <code class="inline">str</code>+<code class="inline">int</code> automaticamente porque seria ambíguo (somar ou concatenar?) — dá <code class="inline">TypeError</code>.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m2">
+      <summary><span class="midx">02</span><h2>Funções e loops</h2><span class="tag">Aula 2</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> criar funções reutilizáveis e repetir tarefas com <code class="inline">for</code> e <code class="inline">while</code>.</div>
+        <h3>Conteúdo</h3>
+        <ul>
+          <li><code class="inline">def nome(parametros): ... return</code>. Sem <code class="inline">return</code>, devolve <code class="inline">None</code>.</li>
+          <li><code class="inline">lambda x: x*2</code> — função anônima, útil com <code class="inline">sorted(key=...)</code>.</li>
+          <li><code class="inline">while</code> repete até a condição falhar; <code class="inline">for</code> itera sobre sequências; <code class="inline">break</code>/<code class="inline">continue</code> controlam o fluxo.</li>
+        </ul>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">def calcular_velocidade_orbital(altitude_km, g=6.674e-11, massa=5.972e24):
+    raio = (6371 + altitude_km) * 1000
+    return (g * massa / raio) ** 0.5 / 1000
+
+for alt in [200, 408, 800]:
+    v = calcular_velocidade_orbital(alt)
+    print(f"{alt} km → {v:.2f} km/s")</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercícios</span>
+          <div class="exercise">
+            <span class="exnum">2.1</span>
+            Ordene <code class="inline">satelites = [("Amazonia-1", 752), ("CBERS-4", 645), ("SGDC-1", 35786)]</code> pela altitude usando <code class="inline">lambda</code> + <code class="inline">sorted()</code>.
+            <details><summary>ver solução</summary>
+<pre><code class="language-python">satelites = [("Amazonia-1", 752), ("CBERS-4", 645), ("SGDC-1", 35786)]
+ordenado = sorted(satelites, key=lambda s: s[1])
+print(ordenado)</code></pre>
+            </details>
+          </div>
+          <div class="exercise">
+            <span class="exnum">2.2</span>
+            Escreva uma função <code class="inline">contar_passagens(dias, intervalo_horas)</code> usando <code class="inline">while</code> que conta quantas passagens de satélite ocorrem em N dias, se ele passa a cada <code class="inline">intervalo_horas</code>.
+            <details><summary>ver solução</summary>
+<pre><code class="language-python">def contar_passagens(dias, intervalo_horas):
+    horas_totais = dias * 24
+    passagens, horas_passadas = 0, 0
+    while horas_passadas + intervalo_horas <= horas_totais:
+        horas_passadas += intervalo_horas
+        passagens += 1
+    return passagens
+
+print(contar_passagens(7, 6))</code></pre>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m3">
+      <summary><span class="midx">03</span><h2>Strings e arquivos</h2><span class="tag">Aula 3</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> manipular texto e ler/escrever arquivos com segurança.</div>
+        <h3>Conteúdo</h3>
+        <ul>
+          <li>String é sequência imutável — indexável e fatiável. Métodos: <code class="inline">.split()</code>, <code class="inline">.join()</code>, <code class="inline">.strip()</code>, f-strings.</li>
+          <li><code class="inline">with open(caminho, modo) as f:</code> — sempre use <code class="inline">with</code>, fecha o arquivo mesmo se der erro. Modos: "r", "w", "a".</li>
+        </ul>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">with open("leituras.txt", "w") as f:
+    f.write("2024-01-01,23.4\n2024-01-02,24.1\n")
+
+with open("leituras.txt") as f:
+    for linha in f:
+        data, valor = linha.strip().split(",")
+        print(f"{data}: {float(valor)} °C")</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercícios</span>
+          <div class="exercise">
+            <span class="exnum">3.1</span>
+            Transforme <code class="inline">"PM2.5:35.2;PM10:58.7;O3:41.0"</code> num dicionário <code class="inline">{"PM2.5": 35.2, ...}</code> usando <code class="inline">.split()</code>.
+            <details><summary>ver solução</summary>
+<pre><code class="language-python">bruto = "PM2.5:35.2;PM10:58.7;O3:41.0"
+medicoes = {}
+for par in bruto.split(";"):
+    chave, valor = par.split(":")
+    medicoes[chave] = float(valor)
+print(medicoes)</code></pre>
+            </details>
+          </div>
+          <div class="exercise">
+            <span class="exnum">3.2</span>
+            Por que <code class="inline">with open(...) as f:</code> é preferível a <code class="inline">open()</code> + <code class="inline">f.close()</code> manual?
+            <details><summary>ver solução</summary>
+              <p>Garante o fechamento do arquivo mesmo se uma exceção acontecer no meio do bloco — evita vazamento de recursos e arquivos corrompidos.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m4">
+      <summary><span class="midx">04</span><h2>Listas, dicionários e tuplas</h2><span class="tag">Aula 4</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> escolher a estrutura de dados certa pra cada problema.</div>
+        <h3>Conteúdo</h3>
+        <ul>
+          <li>Listas <code class="inline">[]</code>: ordenadas, mutáveis. Dicts <code class="inline">{}</code>: chave→valor, use <code class="inline">.get(chave, padrao)</code>. Tuplas <code class="inline">()</code>: imutáveis, usadas como chave de dict (listas não podem — não são hashable).</li>
+          <li>List comprehension: <code class="inline">[x**2 for x in range(5) if x % 2 == 0]</code>.</li>
+        </ul>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">estacoes = [{"nome": "Manaus", "pm25": 18.4}, {"nome": "Alta Floresta", "pm25": 42.1}]
+acima_limite = [e["nome"] for e in estacoes if e["pm25"] > 25]
+print(acima_limite)  # ['Alta Floresta']</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercícios</span>
+          <div class="exercise">
+            <span class="exnum">4.1</span>
+            Dada <code class="inline">temperaturas = [22.1, 24.5, 19.8, 30.2, 27.7]</code>, gere uma lista só com valores acima de 25 e outra convertida pra Fahrenheit.
+            <details><summary>ver solução</summary>
+<pre><code class="language-python">temperaturas = [22.1, 24.5, 19.8, 30.2, 27.7]
+acima_25 = [t for t in temperaturas if t > 25]
+fahrenheit = [t * 9/5 + 32 for t in temperaturas]</code></pre>
+            </details>
+          </div>
+          <div class="exercise">
+            <span class="exnum">4.2</span>
+            Por que uma lista não pode ser chave de dicionário, mas uma tupla pode?
+            <details><summary>ver solução</summary>
+              <p>Chaves de dict precisam ser hashable (hash fixo). Listas são mutáveis — se o conteúdo mudasse, o hash ficaria inconsistente. Tuplas são imutáveis, então servem.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m5">
+      <summary><span class="midx">05</span><h2>Pandas — Series e DataFrames</h2><span class="tag">Aula 5</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> carregar, filtrar e agregar dados tabulares com Pandas.</div>
+        <h3>Conteúdo</h3>
+        <ul>
+          <li><code class="inline">.loc[]</code> seleciona por <em>rótulo</em>; <code class="inline">.iloc[]</code> por <em>posição</em> — depois de um filtro, o índice pode não ser sequencial e os dois retornam linhas diferentes.</li>
+          <li><code class="inline">.query()</code> filtra; <code class="inline">.groupby().agg()</code> agrega; <code class="inline">pd.merge()</code> combina tabelas.</li>
+        </ul>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">df = pd.DataFrame({"estacao": ["A","A","B"], "pm25": [30.2, 28.1, 15.4]})
+media_por_estacao = df.groupby("estacao")["pm25"].mean()
+acima = df.query("pm25 > 20")</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">5.1</span>
+            Qual a diferença prática entre <code class="inline">.loc[]</code> e <code class="inline">.iloc[]</code>? Dê um exemplo em que eles retornam coisas diferentes no mesmo DataFrame.
+            <details><summary>ver solução</summary>
+              <p>Se o índice do DataFrame não for sequencial (ex: sobrou <code class="inline">[2, 5, 7]</code> após um filtro), <code class="inline">df.loc[2]</code> pega a linha rotulada "2", enquanto <code class="inline">df.iloc[2]</code> pega a terceira linha física — podem ser linhas completamente diferentes.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m6">
+      <summary><span class="midx">06</span><h2>Classes e herança (POO)</h2><span class="tag">Aula 5</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> modelar dados e comportamento com classes, e reaproveitar código com herança.</div>
+        <h3>Conteúdo</h3>
+        <ul>
+          <li><code class="inline">__init__(self, ...)</code> é o construtor. <code class="inline">class Filha(Mae):</code> herda; <code class="inline">super().__init__()</code> chama o construtor da mãe.</li>
+        </ul>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">class Sensor:
+    def __init__(self, nome, unidade):
+        self.nome = nome
+        self.unidade = unidade
+        self.leituras = []
+    def media(self):
+        return sum(self.leituras) / len(self.leituras) if self.leituras else 0
+
+class SensorTemperatura(Sensor):
+    def __init__(self, nome):
+        super().__init__(nome, unidade="°C")
+    def em_fahrenheit(self):
+        return self.media() * 9/5 + 32</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">6.1</span>
+            O que <code class="inline">super().__init__()</code> faz, e por que esquecê-lo numa subclasse costuma causar bug?
+            <details><summary>ver solução</summary>
+              <p>Garante que os atributos definidos na classe-mãe (<code class="inline">self.nome</code>, <code class="inline">self.unidade</code>...) sejam criados na instância. Sem isso, esses atributos não existem — qualquer método herdado que dependa deles quebra com <code class="inline">AttributeError</code>.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m7">
+      <summary><span class="midx">07</span><h2>NumPy</h2><span class="tag">Aula 5</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> operar arrays numéricos de forma vetorizada, sem loops explícitos.</div>
+        <h3>Conteúdo</h3>
+        <ul>
+          <li>Array homogêneo, operações vetorizadas — muito mais rápido que loop Python puro (código C, blocos contíguos de memória).</li>
+          <li>"Band math" em imagens de satélite: operar arrays inteiros sem loop — ex: NDVI = (nir - red)/(nir + red).</li>
+        </ul>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">nir = np.array([[0.45, 0.50], [0.40, 0.55]])
+red = np.array([[0.10, 0.12], [0.09, 0.14]])
+ndvi = (nir - red) / (nir + red)
+print("Vegetação saudável:", (ndvi > 0.5).sum(), "pixels")</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">7.1</span>
+            Por que operar com arrays vetorizados é mais rápido que um <code class="inline">for</code> pixel a pixel?
+            <details><summary>ver solução</summary>
+              <p>NumPy roda em código C compilado sobre memória contígua (SIMD, cache). Um <code class="inline">for</code> em Python reavalia tipo e faz overhead de interpretador a cada iteração — em imagens com milhões de pixels, isso é ordens de magnitude mais lento.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m8">
+      <summary><span class="midx">08</span><h2>Banco de dados (SQLite)</h2><span class="tag">Aula 8</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> criar tabelas relacionais e fazer CRUD com SQL a partir do Python.</div>
+        <h3>Conteúdo</h3>
+        <ul>
+          <li>CRUD: <code class="inline">CREATE TABLE</code>, <code class="inline">INSERT</code>, <code class="inline">SELECT</code>, <code class="inline">UPDATE</code>, <code class="inline">DELETE</code>. Chave primária identifica a linha; chave estrangeira relaciona tabelas.</li>
+        </ul>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">cur.execute("""CREATE TABLE estacao (
+    id INTEGER PRIMARY KEY, nome TEXT NOT NULL, lat REAL, lon REAL)""")
+cur.execute("INSERT INTO estacao (nome, lat, lon) VALUES (?, ?, ?)", ("Manaus", -3.10, -60.02))
+conn.commit()</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">8.1</span>
+            Qual a diferença entre <code class="inline">DELETE FROM leitura WHERE id = 5</code> e esquecer o <code class="inline">WHERE</code>?
+            <details><summary>ver solução</summary>
+              <p>Sem <code class="inline">WHERE</code>, o <code class="inline">DELETE</code> apaga <em>todas</em> as linhas da tabela. Sempre confira a cláusula antes de rodar em produção.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ================= MÓDULO II ================= -->
+    <div class="phase-title"><h2>Módulo II — Dados Geoespaciais</h2><span>geometrias, GeoPandas, CRS</span></div>
+
+    <details class="lesson" id="m9">
+      <summary><span class="midx">09</span><h2>Shapely — geometrias</h2><span class="tag">python_gis_0</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> criar e comparar geometrias vetoriais seguindo o padrão OGC.</div>
+        <h3>Conteúdo</h3>
+        <p>O <strong>Simple Features</strong> (OGC, ISO 19125) é o padrão que a Shapely implementa: <code class="inline">Point</code>, <code class="inline">LineString</code>, <code class="inline">Polygon</code> e versões "Multi". Toda geometria tem <code class="inline">.area</code>, <code class="inline">.length</code>, <code class="inline">.centroid</code>, <code class="inline">.bounds</code>.</p>
+        <table class="reftable">
+          <tr><th>Predicado</th><th>Método</th><th>Significado</th></tr>
+          <tr><td>Equals</td><td><code class="inline">.equals(B)</code></td><td>Topologicamente iguais</td></tr>
+          <tr><td>Disjoint</td><td><code class="inline">.disjoint(B)</code></td><td>Nenhum ponto em comum</td></tr>
+          <tr><td>Intersects</td><td><code class="inline">.intersects(B)</code></td><td>Ao menos um ponto em comum</td></tr>
+          <tr><td>Touches</td><td><code class="inline">.touches(B)</code></td><td>Se tocam só na fronteira</td></tr>
+          <tr><td>Crosses</td><td><code class="inline">.crosses(B)</code></td><td>Se cruzam (dimensões diferentes)</td></tr>
+          <tr><td>Within</td><td><code class="inline">.within(B)</code></td><td>A completamente dentro de B</td></tr>
+          <tr><td>Contains</td><td><code class="inline">.contains(B)</code></td><td>A contém B</td></tr>
+          <tr><td>Overlaps</td><td><code class="inline">.overlaps(B)</code></td><td>Sobrepõem parcialmente</td></tr>
+        </table>
+        <p><strong>WKT</strong> (texto legível) e <strong>WKB</strong> (binário compacto, usado por PostGIS) são os formatos de troca. Operações de conjunto: <code class="inline">.union()</code>, <code class="inline">.intersection()</code>, <code class="inline">.difference()</code>, <code class="inline">.symmetric_difference()</code>.</p>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">from shapely.geometry import Point, Polygon, box
+
+area_protegida = Polygon([(-61,-4),(-59,-4),(-59,-2),(-61,-2)])
+estacao = Point(-60.02, -3.10)
+print(area_protegida.contains(estacao))  # True
+
+A, B = box(2,2,6,6), box(4,4,8,8)
+print(A.overlaps(B), A.intersection(B).area)</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercícios</span>
+          <div class="exercise">
+            <span class="exnum">9.1</span>
+            Crie um <code class="inline">Polygon</code> com um buraco (<code class="inline">holes=</code>) e teste se um ponto dentro do buraco é considerado "contido".
+            <details><summary>ver solução</summary>
+<pre><code class="language-python">poligono_com_buraco = Polygon(
+    [(0,0),(10,0),(10,10),(0,10),(0,0)],
+    holes=[[(3,3),(7,3),(7,7),(3,7),(3,3)]]
+)
+print(poligono_com_buraco.contains(Point(5,5)))  # False — buraco não conta como "dentro"</code></pre>
+            </details>
+          </div>
+          <div class="exercise">
+            <span class="exnum">9.2</span>
+            <code class="inline">.within()</code> e <code class="inline">.contains()</code> são opostos? Explique.
+            <details><summary>ver solução</summary>
+              <p>Sim. <code class="inline">a.contains(b)</code> ⟺ <code class="inline">b.within(a)</code> — <code class="inline">a</code> contém <code class="inline">b</code> é o mesmo que dizer que <code class="inline">b</code> está dentro de <code class="inline">a</code>.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m10">
+      <summary><span class="midx">10</span><h2>GeoPandas — de CSV a mapa</h2><span class="tag">python_gis_1</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> transformar uma tabela comum num GeoDataFrame e exportar pro formato certo.</div>
+        <h3>Conteúdo</h3>
+        <ul>
+          <li><code class="inline">gpd.points_from_xy(df.x, df.y)</code> transforma colunas de coordenadas numa coluna <code class="inline">geometry</code>.</li>
+          <li>⚠ Convenção GIS: <code class="inline">(longitude, latitude)</code> = <code class="inline">(x, y)</code>. Inverter é erro clássico.</li>
+        </ul>
+        <table class="reftable">
+          <tr><th>Formato</th><th>Extensão</th><th>Característica</th></tr>
+          <tr><td>Shapefile</td><td>.shp</td><td>Antigo/difundido; múltiplos arquivos; colunas limitadas a 10 caracteres</td></tr>
+          <tr><td>GeoJSON</td><td>.geojson</td><td>Baseado em JSON, ideal pra web/APIs</td></tr>
+          <tr><td>GeoPackage</td><td>.gpkg</td><td>Padrão OGC moderno (SQLite) — recomendado pra projetos novos</td></tr>
+        </table>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">df = pd.DataFrame({"nome": ["Manaus","Belém"], "lat": [-3.10,-1.46], "lon": [-60.02,-48.50]})
+gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.lon, df.lat), crs="EPSG:4326")
+gdf.to_file("estacoes.geojson", driver="GeoJSON")</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">10.1</span>
+            Crie um CSV com 10 cidades da sua região, transforme em GeoDataFrame com CRS EPSG:4326, plote colorido por estado e exporte como GeoJSON.
+            <details><summary>dica</summary>
+              <p><code class="inline">gdf.plot(column="estado", categorical=True, legend=True)</code> — o parâmetro <code class="inline">column</code> escolhe qual atributo colore o mapa.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m11">
+      <summary><span class="midx">11</span><h2>CRS e projeções</h2><span class="tag">ebook · week1</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> entender por que todo dado espacial precisa de um sistema de referência, e reprojetar corretamente.</div>
+        <h3>Conteúdo</h3>
+        <div class="callout">Assim como "10" não quer dizer nada sem unidade, uma coordenada não quer dizer nada sem um <strong>CRS</strong>.</div>
+        <p>A Terra é um elipsoide de revolução — cada ajuste regional gera um <strong>Datum</strong> diferente. <strong>Conversão</strong> = trocar projeção mantendo o datum (sem perda). <strong>Transformação</strong> = trocar de datum (pode introduzir metros de incerteza).</p>
+        <table class="reftable">
+          <tr><th></th><th>Geográfico</th><th>Projetado</th></tr>
+          <tr><td>Unidade</td><td>graus (°)</td><td>metros</td></tr>
+          <tr><td>Exemplo</td><td>WGS84 (EPSG:4326)</td><td>SIRGAS2000/UTM (EPSG:319xx)</td></tr>
+        </table>
+        <p>Nenhuma projeção existe sem distorção: PlateCarree não corrige nada, Mercator preserva ângulo, Mollweide/Albers preservam área. UTM usa 60 zonas de 6° — cada uma só é precisa perto do seu centro. <strong>SIRGAS2000</strong> é o datum oficial do Brasil (compatível com WGS84 na prática).</p>
+        <div class="callout important"><strong>Não existe área em graus.</strong> Sempre reprojete pra um CRS métrico (UTM) antes de medir área, distância ou fazer buffer.</div>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">import pyproj
+transformer = pyproj.Transformer.from_crs("EPSG:4326", "EPSG:31982", always_xy=True)
+x, y = transformer.transform(-48.5495, -27.5973)  # Florianópolis: graus → metros
+
+area_graus = sc.geometry.area.iloc[0]                    # inútil
+area_km2 = sc.to_crs(31982).geometry.area.iloc[0] / 1e6   # correto</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercícios</span>
+          <div class="exercise">
+            <span class="exnum">11.1</span>
+            Qual a diferença entre <code class="inline">.set_crs()</code> e <code class="inline">.to_crs()</code>?
+            <details><summary>ver solução</summary>
+              <p><code class="inline">.set_crs()</code> só <strong>declara</strong> qual CRS os dados já estão usando — não move nenhum ponto. <code class="inline">.to_crs()</code> <strong>converte</strong> as coordenadas de verdade, os valores numéricos mudam.</p>
+            </details>
+          </div>
+          <div class="exercise">
+            <span class="exnum">11.2</span>
+            Pesquise o código EPSG UTM da sua região e reprojete um GeoDataFrame de teste. O que muda nos valores das coordenadas?
+            <details><summary>dica</summary>
+              <p>Os valores deixam de estar em graus (~-23.55) e passam a estar em metros a partir de uma origem local (números na casa das centenas de milhares) — porque você saiu de um CRS esférico pra um plano.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m12">
+      <summary><span class="midx">12</span><h2>H3 — grades hexagonais</h2><span class="tag">ebook · week1</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> indexar uma área geográfica numa grade uniforme pra agregação espacial em escala.</div>
+        <h3>Conteúdo</h3>
+        <p>Grades quadradas têm distâncias desiguais entre vizinhos (ortogonal = 1, diagonal ≈1.41). <strong>H3</strong> (Uber) usa hexágonos: os 6 vizinhos ficam sempre à mesma distância do centro — padrão da indústria pra precificação dinâmica e análise espacial em escala.</p>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">import geobr, h3
+muni = geobr.read_municipality(code_muni=4205407, year=2020)  # Florianópolis
+shape = h3.geo_to_h3shape(muni.geometry.iloc[0])
+cells = h3.h3shape_to_cells(shape, 8)  # resolução 8 (~0.7 km²/hexágono)</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício (tarefa oficial do ebook)</span>
+          <div class="exercise">
+            <span class="exnum">12.1</span>
+            Escolha uma cidade (Bonito/MS <code class="inline">5002308</code>, Paraty/RJ <code class="inline">3303807</code>, Lençóis/BA <code class="inline">2919207</code>, Bento Gonçalves/RS <code class="inline">4302105</code>), gere as células H3 em resoluções 7, 8 e 9, calcule uma métrica por célula (distância ao centro, por exemplo) e monte um mapa interativo com <code class="inline">folium</code>.
+            <details><summary>reflexão</summary>
+              <p>Compare com um colega que escolheu outra cidade: o número de hexágonos muda muito entre cidade pequena e grande? A resolução 9 ainda é viável pra um município enorme?</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m13">
+      <summary><span class="midx">13</span><h2>Fiona</h2><span class="tag">python_gis_2</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> ler e escrever dados geoespaciais em baixo nível, sem depender do GeoPandas.</div>
+        <h3>Conteúdo</h3>
+        <p>Fiona faz interface com a OGR (parte vetorial da GDAL) — o GeoPandas usa Fiona por baixo dos panos. Uma <strong>feição</strong> (feature) = geometria + atributos. <code class="inline">mapping()</code> do Shapely converte geometria pro dict GeoJSON-like que a Fiona espera na escrita.</p>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">import fiona
+with fiona.open("saida/pontos.shp") as src:
+    print(src.driver, src.crs, len(src))
+    for feature in src:
+        print(feature["geometry"]["type"], feature["properties"])</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">13.1</span>
+            Quando faz mais sentido usar Fiona direto, em vez de <code class="inline">gpd.read_file()</code>?
+            <details><summary>ver solução</summary>
+              <p>Quando você precisa de iteração eficiente sem carregar tudo em memória (arquivos enormes), controle fino sobre schema/campos ao escrever, ou acesso a formatos que o GeoPandas não suporta bem.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ================= MÓDULO III ================= -->
+    <div class="phase-title"><h2>Módulo III — Análise Espacial</h2><span>combinando camadas</span></div>
+
+    <details class="lesson" id="m14">
+      <summary><span class="midx">14</span><h2>Spatial join</h2><span class="tag">python_gis_2</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> combinar duas camadas pela relação espacial entre elas, não por uma chave em comum.</div>
+        <h3>Conteúdo</h3>
+        <table class="reftable">
+          <tr><th>Parâmetro</th><th>Opções</th><th>Descrição</th></tr>
+          <tr><td><code class="inline">how</code></td><td>"inner", "left", "right"</td><td>Tipo de join</td></tr>
+          <tr><td><code class="inline">predicate</code></td><td>"intersects" (padrão), "within", "contains"...</td><td>Condição espacial</td></tr>
+        </table>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">escolas_por_bairro = gpd.sjoin(escolas, bairros_gdf, how="inner", predicate="within")
+contagem = escolas_por_bairro.groupby("nome_right").agg(total=("nome_left", "count"))
+
+# variante por proximidade
+mais_proximo = gpd.sjoin_nearest(escolas, saude, distance_col="dist", max_distance=5000)</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">14.1</span>
+            Qual a diferença entre usar <code class="inline">predicate="within"</code> e <code class="inline">predicate="intersects"</code> num sjoin de pontos em polígonos?
+            <details><summary>ver solução</summary>
+              <p><code class="inline">"within"</code> só junta pontos totalmente dentro do polígono. <code class="inline">"intersects"</code> é mais permissivo — inclui pontos exatamente na fronteira também.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m15">
+      <summary><span class="midx">15</span><h2>Overlay</h2><span class="tag">python_gis_2</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> gerar novas geometrias a partir da sobreposição de duas camadas.</div>
+        <h3>Conteúdo</h3>
+        <table class="reftable">
+          <tr><th><code class="inline">how</code></th><th>Resultado</th></tr>
+          <tr><td>"intersection"</td><td>Área comum às duas camadas</td></tr>
+          <tr><td>"union"</td><td>Todas as áreas combinadas</td></tr>
+          <tr><td>"difference"</td><td>Primeira camada excluindo a segunda</td></tr>
+          <tr><td>"symmetric_difference"</td><td>Área exclusiva de cada camada</td></tr>
+        </table>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">intersecao = gpd.overlay(zonas.iloc[[0]], zonas.iloc[[1]], how="intersection")
+print(f"Área: {intersecao.area.sum():.2f}")</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">15.1</span>
+            Explique a diferença fundamental de resultado entre <code class="inline">sjoin</code> e <code class="inline">overlay</code>.
+            <details><summary>ver solução</summary>
+              <p><code class="inline">sjoin</code> mantém a geometria original e só traz atributos quando há relação espacial. <code class="inline">overlay</code> recorta/combina, criando geometrias novas resultantes da operação de conjunto.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m16">
+      <summary><span class="midx">16</span><h2>Buffer, convex hull e dissolve</h2><span class="tag">notebook + ebook</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> criar zonas de influência, envoltórias convexas e agregações por atributo.</div>
+        <h3>Conteúdo</h3>
+        <p><strong>Buffer</strong> cria uma zona de influência ao redor de uma geometria — sempre em CRS projetado (metros). <strong>Convex hull</strong> é o menor polígono convexo que contém todos os pontos. <strong>Dissolve</strong> une geometrias vizinhas que compartilham um atributo.</p>
+        <div class="callout important">Buffer em CRS geográfico (graus) dá resultado distorcido — sempre reprojete antes.</div>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">buffers = escolas[["id","geometry"]].copy()
+buffers["geometry"] = buffers.buffer(1000)  # 1 km, em CRS projetado
+
+hull = escolas.geometry.union_all().convex_hull
+
+bairros_dissolvidos = quadras.dissolve(by="bairro", aggfunc="sum")</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercícios</span>
+          <div class="exercise">
+            <span class="exnum">16.1</span>
+            Combine <code class="inline">buffer</code> + <code class="inline">overlay(how="intersection")</code> pra encontrar áreas cobertas por dois buffers de escola ao mesmo tempo.
+            <details><summary>ver solução</summary>
+<pre><code class="language-python">pares = gpd.overlay(buffers, buffers, how="intersection")
+pares = pares[pares["id_1"] < pares["id_2"]]  # evita duplicar A∩B com B∩A
+cobertura_dupla = pares.union_all()</code></pre>
+            </details>
+          </div>
+          <div class="exercise">
+            <span class="exnum">16.2</span>
+            Por que dobrar o raio do buffer quase sempre mais que dobra o número de pares sobrepostos?
+            <details><summary>ver solução</summary>
+              <p>A área de cada buffer cresce com o quadrado do raio (área ∝ r²) — dobrar o raio quadruplica a área, aumentando a chance de sobreposição de forma não-linear.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m17">
+      <summary><span class="midx">17</span><h2>Topologia e distância na prática</h2><span class="tag">ebook · Sinop</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> classificar pontos por relação espacial e calcular distâncias reais entre camadas.</div>
+        <h3>Conteúdo</h3>
+        <p>Relações topológicas são booleanas (tabela do Módulo 09). Relações de <strong>distância</strong> são contínuas — entre pontos é euclideana; entre ponto e polígono, é a distância mínima.</p>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">area_urbana = centro.buffer(5000).iloc[0]  # 5 km, em metros
+schools["zona"] = np.where(schools.within(area_urbana), "urbana", "rural")
+
+dist_para_saude = schools.geometry.apply(lambda pt: saude.distance(pt).min())</code></pre>
+        <p><strong>Transformações afins</strong> distorcem uma geometria sem recalcular nada a partir dos dados originais: <code class="inline">shapely.affinity.rotate(geom, 45, origin="centroid")</code>.</p>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">17.1</span>
+            Por que <code class="inline">.distance()</code> entre um ponto e um polígono não é ambíguo, mesmo o polígono tendo "vários pontos"?
+            <details><summary>ver solução</summary>
+              <p>Porque a definição é sempre a <em>menor</em> distância entre qualquer par de pontos das duas geometrias — não há ambiguidade, é um mínimo bem definido.</p>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m18">
+      <summary><span class="midx">18</span><h2>Agregação espacial</h2><span class="tag">ebook · Sinop</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> resumir uma variável agrupando pela geometria de outra camada.</div>
+        <h3>Conteúdo</h3>
+        <p>Resume valores de um objeto (o "alvo") agrupando pela geometria de outro (a "fonte") — a fonte define os grupos e o resultado herda a geometria dela.</p>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">resumo = schools_com_saude.groupby("zona").agg(
+    n_escolas=("code_school", "count"),
+    dist_media_saude=("dist_saude_mais_proxima", "mean"),
+).round(0)</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">18.1</span>
+            Adicione ao <code class="inline">resumo</code> acima a distância <em>mínima</em> até a saúde mais próxima por zona.
+            <details><summary>ver solução</summary>
+<pre><code class="language-python">resumo = schools_com_saude.groupby("zona").agg(
+    n_escolas=("code_school", "count"),
+    dist_media_saude=("dist_saude_mais_proxima", "mean"),
+    dist_min_saude=("dist_saude_mais_proxima", "min"),
+).round(0)</code></pre>
+            </details>
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <!-- ================= MÓDULO IV ================= -->
+    <div class="phase-title"><h2>Módulo IV — Casos reais &amp; contexto</h2><span>onde tudo se junta</span></div>
+
+    <details class="lesson" id="m19">
+      <summary><span class="midx">19</span><h2>Estudo de caso: municípios de Alagoas</h2><span class="tag">python_gis_2</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> aplicar sjoin + dissolve + groupby num problema real com dados do IBGE.</div>
+        <h3>Exemplo resolvido</h3>
+        <pre><code class="language-python">muni = geobr.read_municipality(code_muni="AL", year=2007)
+df_upa = geobr.read_health_facilities(202604, code_muni="AL")
+assert muni.crs == df_upa.crs
+
+alagoas_estado = muni.dissolve()
+gdf_in_al = gpd.sjoin(df_upa, alagoas_estado, how="inner", predicate="within")
+
+total_unidades = gdf_in_al.groupby('name_muni_left').agg(total=("no_fantasia","count"))
+muni_unidades = muni.join(total_unidades, how='inner', on='name_muni')
+muni_unidades.plot(column='total')</code></pre>
+
+        <div class="exlist">
+          <span class="exlabel-main">Exercício oficial do notebook</span>
+          <div class="exercise">
+            <span class="exnum">19.1</span>
+            Crie um mapa que demonstra o número de unidades de saúde por município de Alagoas (o código acima já resolve — tente reproduzir sem olhar, depois compare).
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m20">
+      <summary><span class="midx">20</span><h2>Estudo de caso: Sinop, MT</h2><span class="tag">ebook · week1</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> encadear centroid, dissolve, buffer, topologia, distância e agregação numa análise só.</div>
+        <p>Cruza escolas (INEP) e saúde (CNES) via <code class="inline">geobr</code>. <strong>Conclusão real do ebook:</strong> escolas rurais em Sinop estão, em média, pelo menos 700 metros mais longe do estabelecimento de saúde mais próximo do que escolas urbanas.</p>
+        <div class="exlist">
+          <span class="exlabel-main">Exercício</span>
+          <div class="exercise">
+            <span class="exnum">20.1</span>
+            Troque Sinop por outra cidade de <code class="inline">geobr</code> e refaça a análise urbana/rural completa. O padrão (rural mais distante da saúde) se repete?
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="lesson" id="m21">
+      <summary><span class="midx">21</span><h2>Ecossistema geoespacial &amp; provedores</h2><span class="tag">ebook · week0</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> saber onde procurar dado real pra cada tipo de problema geoespacial.</div>
+        <table class="reftable">
+          <tr><th>Tema (top votados)</th><th>Provedores principais</th></tr>
+          <tr><td>Satélites / plano de órbita</td><td>INPE Catálogo DGI, STAC Catalogue, Brazil Data Cube</td></tr>
+          <tr><td>Mudanças climáticas</td><td>Copernicus CDS (ERA5), Destination Earth, INPE-CPTEC</td></tr>
+          <tr><td>Queimadas / desmatamento</td><td>TerraBrasilis, INPE Queimadas, MapBiomas</td></tr>
+          <tr><td>Agricultura digital</td><td>Embrapa/GeoInfo, IBGE PAM/Censo, CAR</td></tr>
+          <tr><td>Mobilidade e transportes</td><td>OpenStreetMap, IPEA, IBGE malhas censitárias</td></tr>
+        </table>
+        <p>Lista completa (19 temas) em <code class="inline">week0/data/provedores.json</code> no repositório do ebook.</p>
+      </div>
+    </details>
+
+    <!-- ================= CONTINUE ESTUDANDO ================= -->
+    <div class="phase-title"><h2>Continue estudando</h2><span>trilha de cursos gratuitos</span></div>
+
+    <details class="lesson" id="m22" open>
+      <summary><span class="midx">↗</span><h2>Cursos gratuitos pra ir além do bootcamp</h2><span class="tag">verificados</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <p style="margin-top:16px">Todos abaixo são gratuitos e verificados. Ordem sugerida: se você já terminou este curso, pode ir direto pro <strong>Geo-Python</strong> (revisão rápida de Python geo) e depois pro <strong>AutoGIS</strong>, que é o que mais aprofunda exatamente onde este guia parou.</p>
+
+        <div class="course-card">
+          <h3>Geo-Python</h3>
+          <span class="meta">Universidade de Helsinki · Iniciante, não exige experiência prévia</span>
+          <p>Fundamentos de Python aplicados a dados geoespaciais — mais devagar e detalhado que os Módulos 1-8 deste guia. Bom se você quer reforçar a base antes de avançar.</p>
+          <a class="link" href="https://geo-python-site.readthedocs.io/en/latest/" target="_blank">geo-python-site.readthedocs.io →</a>
+        </div>
+
+        <div class="course-card">
+          <h3>Automating GIS Processes (AutoGIS)</h3>
+          <span class="meta">Universidade de Helsinki · Continuação direta do Geo-Python</span>
+          <p>O curso que mais se conecta com os Módulos 9-18 deste guia: CRS, overlay, análise de rede, e boas práticas com Git/GitHub. Material e vídeos de aula abertos.</p>
+          <a class="link" href="https://autogis-site.readthedocs.io/en/latest/" target="_blank">autogis-site.readthedocs.io →</a>
+        </div>
+
+        <div class="course-card">
+          <h3>Geospatial Analysis (Kaggle Learn)</h3>
+          <span class="meta">Kaggle · Curto, prático, direto no navegador</span>
+          <p>Curso curto e hands-on sobre GeoPandas, geocodificação e análise espacial — bom pra praticar rápido sem instalar nada localmente.</p>
+          <a class="link" href="https://www.kaggle.com/learn/geospatial-analysis" target="_blank">kaggle.com/learn/geospatial-analysis →</a>
+        </div>
+
+        <div class="course-card">
+          <h3>Python Foundation for Spatial Analysis</h3>
+          <span class="meta">Spatial Thoughts · Gratuito em formato self-study (OpenCourseWare)</span>
+          <p>Do zero em Python até pipelines de dados espaciais e APIs geoespaciais. A versão paga tem mentoria ao vivo e certificado; o material completo de estudo é aberto.</p>
+          <a class="link" href="https://courses.spatialthoughts.com/python-foundation.html" target="_blank">courses.spatialthoughts.com →</a>
+        </div>
+
+        <div class="course-card">
+          <h3>Earth Data Science / Earth Analytics</h3>
+          <span class="meta">Earth Lab, University of Colorado Boulder · Textos + cursos abertos</span>
+          <p>Mais de 300 lições abertas cobrindo Python, Git, dados de sensoriamento remoto (GeoTIFF, HDF), e visualização científica — vai além do que este guia cobriu, entrando em raster e séries temporais de satélite.</p>
+          <a class="link" href="https://www.earthdatascience.org/courses/" target="_blank">earthdatascience.org/courses →</a>
+        </div>
+
+        <div class="callout">
+          Não incluí cursos em português especializados nessa área porque os que encontrei com conteúdo forte (ex: PyGEO, da Dra. Vanessa Bastos, com passagem pelo INPE) são pagos — a única oferta gratuita identificada era um desafio introdutório de Python geral, não específico de GIS, e não consegui confirmar se continua disponível. Se você prefere estudar em português, o próprio ebook e os notebooks deste bootcamp continuam sendo sua melhor referência gratuita na língua.
+        </div>
+      </div>
+    </details>
+
+    <footer>
+      Curso construído a partir dos três guias anteriores deste bootcamp (Steps 1, 2 e 3), reelaborado em formato de aula com objetivo, conteúdo, exemplo resolvido e exercícios comentados em cada módulo. Fontes: síntese própria (fundamentos Python), notebooks <code class="inline">python_gis_0/1/2.ipynb</code>, e capítulos reais do ebook <code class="inline">fundamentals_gis_rs</code> (Week 0 e Week 1). Trilha de cursos gratuitos verificada por busca na web em setembro de 2026.
+    </footer>
+  </main>
+</div>
+
+<button class="fab" id="fab" onclick="toggleGit(true)">GIT</button>
+<div id="gitpanel">
+  <div class="gp-head">
+    <h3>⌥ Git — comandos essenciais</h3>
+    <button class="gp-close" onclick="toggleGit(false)">✕</button>
+  </div>
+  <div class="gp-body">
+    <div class="gitcmd"><div class="label">Clonar um repositório</div><code>git clone &lt;url&gt;</code></div>
+    <div class="gitcmd"><div class="label">Ver status</div><code>git status</code></div>
+    <div class="gitcmd"><div class="label">Criar e trocar de branch</div><code>git checkout -b nome-da-branch</code></div>
+    <div class="gitcmd"><div class="label">Adicionar ao commit</div><code>git add .</code></div>
+    <div class="gitcmd"><div class="label">Fazer um commit</div><code>git commit -m "mensagem"</code></div>
+    <div class="gitcmd"><div class="label">Subir a branch (1ª vez)</div><code>git push -u origin nome-da-branch</code></div>
+    <div class="gitcmd"><div class="label">Subir alterações</div><code>git push</code></div>
+    <div class="gitcmd"><div class="label">Trazer alterações do remoto</div><code>git pull</code></div>
+    <div class="gitcmd"><div class="label">Desfazer último commit (mantém mudanças)</div><code>git reset --soft HEAD~1</code></div>
+    <div class="gitcmd"><div class="label">Apagar último commit e mudanças</div><code>git reset --hard HEAD~1</code></div>
+    <div class="gitcmd"><div class="label">Editar o último commit</div><code>git commit --amend</code></div>
+    <div class="gitcmd"><div class="label">Reverter commit já enviado</div><code>git revert &lt;hash&gt;</code></div>
+    <div class="gitcmd"><div class="label">Ver histórico</div><code>git log --oneline</code></div>
+    <div class="gitcmd"><div class="label">Juntar branch na atual</div><code>git merge nome-da-branch</code></div>
+    <div class="gitcmd"><div class="label">Guardar mudanças sem commitar</div><code>git stash</code> / <code>git stash pop</code></div>
+    <div class="gitcmd"><div class="label">Apagar branch local</div><code>git branch -d nome-da-branch</code></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script>
+  hljs.highlightAll();
+  function toggleGit(open){
+    var panel = document.getElementById('gitpanel');
+    var fab = document.getElementById('fab');
+    if(open){ panel.classList.add('open'); fab.classList.add('hidden'); }
+    else{ panel.classList.remove('open'); fab.classList.remove('hidden'); }
+  }
+  document.getElementById('menubtn').addEventListener('click', function(){
+    document.getElementById('sidenav').classList.toggle('open');
+  });
+  document.querySelectorAll('.navlist a').forEach(function(a){
+    a.addEventListener('click', function(){
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if(el && !el.open){ el.open = true; }
+      document.getElementById('sidenav').classList.remove('open');
+    });
+  });
+</script>
+</body>
+</html>
