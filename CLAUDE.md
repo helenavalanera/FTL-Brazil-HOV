@@ -27,9 +27,13 @@ Toda análise deve conectar código/teoria da aula com esse repertório.
 **Passos:**
 1. `git fetch upstream`
 2. Comparar `upstream/main` com a última tag `marco-zero-*` existente — listar arquivos/commits novos.
-3. `git pull upstream main --rebase` (ou, se a Helena estiver num branch de trabalho, avaliar se o
-   pull deve ir para `main` local e depois ela decide se traz para o branch de trabalho — não fazer
-   merge/rebase automático no branch de trabalho sem perguntar).
+3. O pull SEMPRE vai para o branch `main` local, nunca direto no branch de trabalho atual da
+   Helena (ex: `remote-sensing-0109`). `main` funciona só como espelho do upstream:
+   - `git checkout main`
+   - `git pull upstream main --rebase`
+   - Se a Helena quiser trazer o conteúdo novo para o branch de trabalho, isso é um passo
+     separado e explícito (merge/rebase de `main` para o branch), pedido por ela — nunca
+     automático. Isolamento total: sync nunca gera conflito de rebase no trabalho em andamento.
 4. Criar a tag `marco-zero-AAAA-MM-DD` no commit resultante.
 5. Reportar de forma resumida: o que mudou (arquivos, notebooks, conteúdo teórico) desde o marco
    zero anterior.
@@ -50,5 +54,7 @@ Toda análise deve conectar código/teoria da aula com esse repertório.
 
 ## Pendências conhecidas (revisar a cada sessão nova)
 
-- Confirmar se o push precisa de um novo token (tokens de sessão da VM não persistem entre sessões).
-- Confirmar branch de trabalho atual antes do Comando 1, caso a Helena tenha trocado de branch.
+- Confirmar se o push precisa de um novo token (tokens configurados na VM/sessão anterior podem
+  não estar disponíveis numa sessão nova — checar `git remote -v` e testar `git ls-remote origin`).
+- Antes do Comando 1, sempre `git status` e `git branch --show-current` para saber em que branch
+  de trabalho a Helena está, e voltar para esse branch depois de atualizar `main`.
