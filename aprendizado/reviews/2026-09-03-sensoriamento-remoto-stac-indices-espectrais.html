@@ -3,167 +3,325 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Review — Aula II: Sensoriamento Remoto</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<title>Aula II — Sensoriamento Remoto: STAC e Índices Espectrais</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  body { font-family: 'Segoe UI', system-ui, sans-serif; }
-  code { font-family: 'SF Mono', Consolas, monospace; }
-  .prose-custom p { line-height: 1.7; }
+  :root{
+    --bg:#0a1220; --panel:#101b30; --panel-2:#16233c; --line:#223256;
+    --text:#e7ecf5; --text-dim:#8ea0c2; --accent:#5eead4; --accent-dim:#2f6f66;
+    --amber:#f5a524; --amber-dim:#6b4b16; --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:radial-gradient(circle at 15% 0%, rgba(94,234,212,0.06), transparent 40%), radial-gradient(circle at 85% 10%, rgba(245,165,36,0.05), transparent 35%), var(--bg); color:var(--text); font-family:'IBM Plex Sans', sans-serif; line-height:1.55;}
+  .grid-overlay{position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.35; background-image:linear-gradient(rgba(94,234,212,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(94,234,212,.035) 1px, transparent 1px); background-size:42px 42px; mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, black, transparent 70%);}
+  h1,h2,h3,h4{font-family:'Space Grotesk', sans-serif; margin:0 0 .4em;}
+  code, pre, .mono{font-family:'IBM Plex Mono', monospace;}
+  a{color:var(--accent);}
+  .shell{display:flex; min-height:100vh; position:relative; z-index:1;}
+  nav.side{width:270px; flex:none; position:sticky; top:0; align-self:flex-start; height:100vh; overflow-y:auto; padding:26px 18px 26px 22px; border-right:1px solid var(--line); background:linear-gradient(180deg, var(--panel), var(--bg));}
+  nav.side::-webkit-scrollbar{width:6px;}
+  nav.side::-webkit-scrollbar-thumb{background:var(--line); border-radius:4px;}
+  .brand{display:flex; align-items:center; gap:9px; margin-bottom:6px;}
+  .brand .dot{width:9px; height:9px; border-radius:50%; background:var(--amber); box-shadow:0 0 10px var(--amber); animation:pulse 2.4s infinite ease-in-out;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.35;}}
+  .brand span{font-family:'Space Grotesk'; font-weight:600; font-size:.8rem; letter-spacing:1.5px; color:var(--text-dim); text-transform:uppercase;}
+  .side h1{font-size:1.15rem; margin-bottom:2px;}
+  .side .sub{color:var(--text-dim); font-size:.8rem; margin-bottom:20px;}
+  .navlist{list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:1px;}
+  .navlist li a{display:flex; gap:9px; align-items:baseline; text-decoration:none; color:var(--text-dim); font-size:.85rem; padding:7px 8px; border-radius:7px; transition:.15s;}
+  .navlist li a:hover{background:var(--panel-2); color:var(--text);}
+  .navlist li a .n{font-family:'IBM Plex Mono'; font-size:.7rem; color:var(--amber); flex:none; width:22px;}
+  .navlist .group-label{font-size:.66rem; text-transform:uppercase; letter-spacing:1.6px; color:var(--text-dim); opacity:.55; margin:14px 0 4px 8px;}
+  main{flex:1; min-width:0; padding:44px 48px 120px;}
+  .hero{max-width:840px; margin-bottom:26px;}
+  .eyebrow{font-family:'IBM Plex Mono'; color:var(--amber); font-size:.76rem; letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; display:block;}
+  .hero h1{font-size:2.1rem; line-height:1.1;}
+  .hero p{color:var(--text-dim); font-size:.98rem; max-width:670px;}
+  .status-strip{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;}
+  .chip{font-family:'IBM Plex Mono'; font-size:.7rem; padding:6px 11px; border-radius:100px; border:1px solid var(--line); color:var(--text-dim);}
+
+  .source-note{max-width:840px; border:1px solid var(--amber-dim); background:rgba(245,165,36,.07); border-radius:10px; padding:16px 20px; margin-bottom:30px;}
+  .source-note h3{color:var(--amber); font-size:.82rem; text-transform:uppercase; letter-spacing:.6px; margin-bottom:6px;}
+  .source-note p{color:#d7deec; font-size:.87rem; margin:5px 0;}
+
+  section.lesson{max-width:840px; border:1px solid var(--line); border-radius:var(--radius); margin-bottom:16px; overflow:hidden; background:linear-gradient(180deg, var(--panel), var(--panel-2)); scroll-margin-top:26px;}
+  section.lesson > summary{list-style:none; cursor:pointer; padding:18px 22px; display:flex; align-items:center; gap:14px;}
+  section.lesson > summary::-webkit-details-marker{display:none;}
+  .midx{font-family:'IBM Plex Mono'; color:var(--amber); font-size:.8rem; border:1px solid var(--amber-dim); border-radius:6px; padding:3px 8px; flex:none;}
+  section.lesson > summary h2{font-size:1.08rem; flex:1;}
+  section.lesson > summary .tag{font-family:'IBM Plex Mono'; font-size:.66rem; color:var(--text-dim); border:1px solid var(--line); padding:3px 9px; border-radius:100px; white-space:nowrap;}
+  .chev{color:var(--text-dim); transition:.2s; flex:none;}
+  section.lesson[open] > summary .chev{transform:rotate(90deg);}
+  .lbody{padding:0 22px 24px; border-top:1px solid var(--line);}
+  .objetivo{margin-top:16px; font-size:.88rem; color:var(--amber); background:rgba(245,165,36,.06); border:1px solid var(--amber-dim); border-radius:8px; padding:9px 13px;}
+  .objetivo b{color:var(--amber);}
+  .lbody h3{color:var(--accent); text-transform:uppercase; letter-spacing:.6px; font-size:.74rem; margin-top:20px;}
+  .lbody ul{padding-left:20px; margin:9px 0;}
+  .lbody li{margin-bottom:6px; color:#d7deec;}
+  .lbody p{color:#d7deec;}
+  pre{background:#0c1729 !important; border:1px solid var(--line); border-radius:8px; padding:13px 15px; overflow-x:auto; font-size:.8rem; margin:10px 0;}
+  code.inline{background:var(--panel-2); border:1px solid var(--line); padding:1px 6px; border-radius:5px; font-size:.85em;}
+
+  table.reftable{width:100%; border-collapse:collapse; margin:10px 0; font-size:.8rem;}
+  table.reftable th, table.reftable td{border:1px solid var(--line); padding:6px 9px; text-align:left; color:#d7deec;}
+  table.reftable th{background:var(--panel-2); color:var(--accent); font-family:'IBM Plex Mono'; font-size:.68rem; text-transform:uppercase; letter-spacing:.4px;}
+
+  .callout{border-left:3px solid var(--amber); background:rgba(245,165,36,.06); border-radius:0 8px 8px 0; padding:9px 13px; margin:10px 0; font-size:.86rem; color:#d7deec;}
+  .callout.important{border-left-color:#f0645c; background:rgba(240,100,92,.06);}
+  .callout.accent{border-left-color:var(--accent); background:rgba(94,234,212,.06);}
+
+  .exlist{margin-top:14px; padding-top:12px; border-top:1px dashed var(--line);}
+  .exlist > .exlabel-main{font-family:'IBM Plex Mono'; font-size:.72rem; color:var(--amber); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:block;}
+  .exercise{margin-bottom:10px; border:1px dashed var(--accent-dim); border-radius:8px; padding:11px 14px; background:rgba(94,234,212,0.03);}
+  .exercise .exnum{font-family:'IBM Plex Mono'; font-size:.7rem; color:var(--accent); margin-bottom:5px; display:block;}
+  .exercise details{margin-top:8px;}
+  .exercise summary{cursor:pointer; color:var(--amber); font-family:'IBM Plex Mono'; font-size:.74rem; list-style:none;}
+  .exercise summary::-webkit-details-marker{display:none;}
+  .exercise summary::before{content:"▸ ";}
+  .exercise details[open] summary::before{content:"▾ ";}
+
+  .checklist{list-style:none; padding:0; margin:12px 0 0;}
+  .checklist li{display:flex; gap:10px; align-items:flex-start; margin-bottom:9px; color:#d7deec; font-size:.9rem;}
+  .checklist input{margin-top:3px;}
+
+  footer{max-width:840px; color:var(--text-dim); font-size:.8rem; padding-top:18px; border-top:1px solid var(--line); margin-top:10px;}
+
+  @media (max-width: 880px){
+    nav.side{position:fixed; left:-290px; z-index:60; transition:.25s; box-shadow:0 0 40px rgba(0,0,0,.6);}
+    nav.side.open{left:0;}
+    main{padding:70px 18px 120px;}
+    .hero h1{font-size:1.55rem;}
+    .menubtn{display:flex !important;}
+  }
+  .menubtn{display:none; position:fixed; top:14px; left:14px; z-index:61; background:var(--panel-2); border:1px solid var(--line); color:var(--text); width:40px; height:40px; border-radius:8px; align-items:center; justify-content:center; cursor:pointer;}
 </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body>
+<div class="grid-overlay"></div>
+<button class="menubtn" id="menubtn">☰</button>
 
-<div class="max-w-4xl mx-auto px-6 py-10">
+<div class="shell">
+  <nav class="side" id="sidenav">
+    <div class="brand"><span class="dot"></span><span>Aula II · Review</span></div>
+    <h1>Painel de Missão</h1>
+    <div class="sub">Sensoriamento Remoto — STAC e índices</div>
 
-  <!-- Header -->
-  <header class="mb-10 border-b border-slate-200 pb-6">
-    <p class="text-sm font-semibold text-emerald-700 uppercase tracking-wide">FTL Brazil — Space Tech Bootcamp</p>
-    <h1 class="text-3xl font-bold text-slate-900 mt-1">Aula II — Sensoriamento Remoto: STAC e Índices Espectrais</h1>
-    <p class="text-slate-500 mt-2 text-sm">Aula em 03/09/2026 · Review gerado em 04/09/2026 · Marco zero: <code class="bg-slate-100 px-1.5 py-0.5 rounded">marco-zero-2026-09-04</code></p>
-  </header>
-
-  <!-- Aviso de transparência -->
-  <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-10 text-sm text-amber-900">
-    <strong>Nota sobre a fonte:</strong> a transcrição de áudio da aula veio ilegível (erro de transcrição automática, sem conteúdo aproveitável). Este review foi construído inteiramente a partir do código real dos dois notebooks que o professor publicou no upstream (<code>RS-STAC.ipynb</code> e <code>RS-Image_Processing.ipynb</code>), sem reconstrução da fala do professor. Se algo dito em aula não está refletido no código, não está aqui.
-  </div>
-
-  <!-- Resumo executivo -->
-  <section class="mb-10">
-    <h2 class="text-xl font-bold text-slate-900 mb-3">Resumo executivo</h2>
-    <div class="prose-custom text-slate-700 space-y-3">
-      <p>A aula cobriu o ciclo completo de acesso a imagens de satélite via <strong>STAC</strong> (Spatial Temporal Asset Catalogue): buscar cenas por área/data/nuvens no catálogo do INPE (Brazil Data Cube), ler bandas específicas com <code>rasterio</code> sem baixar a imagem inteira, montar composições RGB e falsa-cor, e servir o resultado num painel interativo com <code>leafmap</code>.</p>
-      <p>O segundo notebook aplica tudo isso a um caso real: o <strong>rompimento da barragem de Brumadinho (25/01/2019)</strong>. Calcula NDVI, NDWI e EVI antes e depois do desastre, classifica a vegetação por limiar, e usa a <strong>diferença entre datas</strong> para visualizar o impacto — perda de vegetação e assoreamento do Rio Paraopeba.</p>
-      <p>Fio condutor técnico da aula: <strong>gerenciamento de recursos</strong> (RAM) como restrição de projeto — resolvida com leitura por janela (<code>window</code>) em vez de carregar a imagem inteira.</p>
-    </div>
-  </section>
-
-  <!-- Conceitos fundamentais -->
-  <section class="mb-10">
-    <h2 class="text-xl font-bold text-slate-900 mb-4">Conceitos fundamentais</h2>
-    <p class="text-slate-600 text-sm mb-4">Base necessária para entender o resto do review — sem isso, o código da aula é só sintaxe decorada.</p>
-    <div class="grid sm:grid-cols-2 gap-4">
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900 text-sm">STAC (SpatioTemporal Asset Catalog)</h3>
-        <p class="text-slate-700 mt-1 text-sm">Padrão aberto que descreve imagens de satélite (data, área, sensor, nuvens) num formato uniforme, independente de quem forneceu a imagem (INPE, AWS, Microsoft). Permite buscar por metadado antes de baixar qualquer pixel — como um índice de biblioteca em vez de vasculhar estante por estante.</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900 text-sm">Bbox (bounding box)</h3>
-        <p class="text-slate-700 mt-1 text-sm">Retângulo definido por 4 coordenadas (min-lon, min-lat, max-lon, max-lat) que delimita a área de interesse. É o filtro espacial mais básico: "eu só quero o que está dentro desse retângulo".</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900 text-sm">CRS / EPSG (Sistema de Referência de Coordenadas)</h3>
-        <p class="text-slate-700 mt-1 text-sm">Define como coordenadas (números) correspondem a posições reais na Terra. EPSG:4326 (lat/lon, WGS84) é o padrão universal para GPS; cada cena de satélite pode estar num CRS projetado diferente — por isso é preciso reprojetar o bbox antes de recortar a imagem.</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900 text-sm">Banda espectral</h3>
-        <p class="text-slate-700 mt-1 text-sm">Um satélite não captura uma "foto" — captura várias imagens (bandas), cada uma de uma faixa específica do espectro eletromagnético (azul, verde, vermelho, infravermelho próximo/NIR, etc). Combinar bandas diferentes revela informação invisível a olho nu.</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900 text-sm">Reflectância de superfície</h3>
-        <p class="text-slate-700 mt-1 text-sm">Fração da luz solar que a superfície reflete de volta ao sensor, já corrigida de efeitos da atmosfera. É o valor "limpo" de cada pixel — o que sustenta comparar duas cenas de datas diferentes com confiança.</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900 text-sm">NDVI / NDWI / EVI</h3>
-        <p class="text-slate-700 mt-1 text-sm">Índices espectrais: contas simples entre bandas que traduzem sinal bruto em algo interpretável. NDVI mede vigor de vegetação, NDWI mede presença de água/umidade, EVI é uma versão do NDVI corrigida para ruído atmosférico e de solo.</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900 text-sm">Thresholding (classificação por limiar)</h3>
-        <p class="text-slate-700 mt-1 text-sm">Transformar um valor contínuo (ex: NDVI de -1 a 1) em categorias discretas (ex: "sem vegetação", "vegetação fraca", "vegetação vigorosa") cortando por faixas de valor.</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900 text-sm">Leitura por janela (Window)</h3>
-        <p class="text-slate-700 mt-1 text-sm">Ler só um pedaço retangular de um arquivo raster gigante, em vez do arquivo inteiro — a imagem pode ter 7000×7000 pixels, mas só interessa uma fração dela.</p>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- Análise técnica -->
-  <section class="mb-10">
-    <h2 class="text-xl font-bold text-slate-900 mb-4">Análise técnica: código vs. teoria</h2>
-
-    <div class="space-y-6">
-      <div class="border-l-4 border-emerald-500 pl-4">
-        <h3 class="font-semibold text-slate-900">1. Busca STAC como API de consulta filtrável</h3>
-        <p class="text-slate-700 mt-1">O padrão <code>client.search(bbox=..., datetime=..., collections=..., query={"eo:cloud_cover": {"lt": 15}})</code> é uma API de consulta espaço-temporal com filtros compostos — equivalente a uma query paramétrica de backend, só que sobre um catálogo geoespacial padronizado ao invés de um banco relacional.</p>
-      </div>
-
-      <div class="border-l-4 border-emerald-500 pl-4">
-        <h3 class="font-semibold text-slate-900">2. Leitura por janela (<code>Window</code>) em vez de imagem completa</h3>
-        <p class="text-slate-700 mt-1">Uma banda em resolução total tem ~51 milhões de pixels. A função <code>read_bbox</code>/<code>read_window</code> reprojeta o bbox de interesse (EPSG:4326 → CRS da cena) e lê só essa fatia via <code>rasterio.windows.from_bounds</code>. O notebook mede isso na prática com <code>check_memory()</code> antes/depois — RAM cai de "carregar 3 bandas inteiras" para "ler uma janela de 500×500".</p>
-      </div>
-
-      <div class="border-l-4 border-emerald-500 pl-4">
-        <h3 class="font-semibold text-slate-900">3. Normalização: min-max vs. contraste por percentil</h3>
-        <p class="text-slate-700 mt-1">A primeira versão de <code>normalize()</code> usa min/max puro (sensível a outliers — um pixel de ruído estica toda a escala). A versão usada no caso Brumadinho troca para <code>stretch()</code> por percentil (2–98), mais robusta. É a mesma imagem processada com um método mais maduro — vale registrar por que a troca foi feita.</p>
-      </div>
-
-      <div class="border-l-4 border-emerald-500 pl-4">
-        <h3 class="font-semibold text-slate-900">4. Índices espectrais como métricas derivadas</h3>
-        <p class="text-slate-700 mt-1"><code>NDVI = (NIR-RED)/(NIR+RED)</code>, <code>NDWI = (GREEN-NIR)/(GREEN+NIR)</code>, <code>EVI</code> (corrige efeito atmosférico/solo). São razões normalizadas entre bandas — o mesmo princípio de construir um indicador composto a partir de variáveis brutas.</p>
-      </div>
-
-      <div class="border-l-4 border-emerald-500 pl-4">
-        <h3 class="font-semibold text-slate-900">5. Classificação por limiar e diferença temporal</h3>
-        <p class="text-slate-700 mt-1"><code>classify_ndvi()</code> corta o índice contínuo em 3 classes (solo/água/urbano &lt; 0.2; vegetação fraca 0.2–0.45; vegetação vigorosa ≥ 0.45), calibrado pelo histograma real da cena — não um valor arbitrário. A detecção de impacto do desastre é só <code>ndvi_depois - ndvi_antes</code>, com o resultado mais forte em <code>diff &lt; -0.3</code>.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Insights práticos -->
-  <section class="mb-10">
-    <h2 class="text-xl font-bold text-slate-900 mb-4">Insights práticos — Engenharia de Produção / Back-End</h2>
-    <div class="grid gap-4">
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900">RAM como restrição de capacidade (bottleneck)</h3>
-        <p class="text-slate-700 mt-1 text-sm">O <code>check_memory()</code> monitorando uso de RAM antes/depois de cada operação é, na prática, monitoramento de um recurso gargalo — a mesma lógica de identificar e proteger o recurso restritivo num processo (Teoria das Restrições). A leitura por janela é a ação de mitigação: processar só o que é necessário, no momento em que é necessário — equivalente direto a JIT/eliminação de desperdício do Lean, aplicado a I/O de dados em vez de estoque físico.</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900">Duplicação de código entre notebooks — dívida técnica real</h3>
-        <p class="text-slate-700 mt-1 text-sm"><code>check_memory()</code> e uma variação de <code>normalize()</code> aparecem copiadas e coladas nos dois notebooks. Do ponto de vista de back-end isso é falta de DRY: cada aula reescreve as mesmas funções utilitárias. Ação concreta: extrair para um módulo compartilhado (ex: <code>aprendizado/utils/raster.py</code>) e importar — reduz risco de as versões divergirem silenciosamente (já divergiram uma vez: min-max virou percentile-stretch numa cópia e não na outra).</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900">Limiar calibrado por dado real, não fixo — paralelo com limites de controle</h3>
-        <p class="text-slate-700 mt-1 text-sm">Os limiares do NDVI (0.2 / 0.45) foram lidos do histograma real da cena antes de classificar, não hardcoded a priori — o mesmo princípio de definir limites de controle (SPC) a partir da distribuição observada do processo, não de um valor teórico genérico.</p>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <h3 class="font-semibold text-slate-900">Diff antes/depois como análise de causa-efeito isolada</h3>
-        <p class="text-slate-700 mt-1 text-sm">Subtrair duas datas da mesma variável, mesma área, mesmo sensor, isola o efeito do evento (rompimento da barragem) de outras fontes de variação — é o mesmo racional de um estudo antes/depois em melhoria de processo: manter tudo constante exceto a variável de interesse para poder atribuir a mudança a uma causa específica.</p>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- Checklist -->
-  <section class="mb-6">
-    <h2 class="text-xl font-bold text-slate-900 mb-4">Checklist — para fixar</h2>
-    <ul class="space-y-2">
-      <li class="flex items-start gap-2 text-slate-700"><input type="checkbox" class="mt-1.5" disabled> Reproduzir uma busca STAC com filtro de <code>eo:cloud_cover</code> para uma área própria (usar o <a href="https://rodostoteknoloji.com/online-tools/bbox-tool-en.html" class="text-emerald-700 underline">bbox finder</a>)</li>
-      <li class="flex items-start gap-2 text-slate-700"><input type="checkbox" class="mt-1.5" disabled> Implementar leitura por <code>Window</code>/bbox e medir a diferença de RAM com <code>check_memory()</code> antes/depois</li>
-      <li class="flex items-start gap-2 text-slate-700"><input type="checkbox" class="mt-1.5" disabled> Calcular NDVI, NDWI e EVI numa cena própria e plotar o histograma</li>
-      <li class="flex items-start gap-2 text-slate-700"><input type="checkbox" class="mt-1.5" disabled> Definir limiares de classificação a partir do histograma real (não copiar 0.2/0.45 sem checar a distribuição da própria cena)</li>
-      <li class="flex items-start gap-2 text-slate-700"><input type="checkbox" class="mt-1.5" disabled> Produzir um mapa de diferença antes/depois para outro evento (ex: queimada, expansão urbana)</li>
-      <li class="flex items-start gap-2 text-slate-700"><input type="checkbox" class="mt-1.5" disabled> Extrair <code>check_memory</code> e as funções de normalização para um módulo compartilhado em <code>/aprendizado</code></li>
-      <li class="flex items-start gap-2 text-slate-700"><input type="checkbox" class="mt-1.5" disabled> Rodar o painel <code>leafmap.split_map</code> localmente e confirmar que o swipe funciona com o kernel ativo</li>
+    <div class="group-label">Base</div>
+    <ul class="navlist">
+      <li><a href="#m1"><span class="n">01</span> Conceitos fundamentais</a></li>
     </ul>
-  </section>
 
-  <footer class="mt-12 pt-6 border-t border-slate-200 text-xs text-slate-400">
-    Gerado a partir de <code>fundamentals_gis_rs/week2/RS-STAC.ipynb</code> e <code>fundamentals_gis_rs/week2/_drafts/RS-Image_Processing.ipynb</code> — marco zero <code>marco-zero-2026-09-04</code>.
-  </footer>
+    <div class="group-label">O que o código faz</div>
+    <ul class="navlist">
+      <li><a href="#m2"><span class="n">02</span> Busca STAC como API filtrável</a></li>
+      <li><a href="#m3"><span class="n">03</span> Leitura por janela (Window)</a></li>
+      <li><a href="#m4"><span class="n">04</span> Normalização: min-max vs. percentil</a></li>
+      <li><a href="#m5"><span class="n">05</span> Índices espectrais</a></li>
+      <li><a href="#m6"><span class="n">06</span> Classificação e diferença temporal</a></li>
+    </ul>
 
+    <div class="group-label">Aplicação</div>
+    <ul class="navlist">
+      <li><a href="#m7"><span class="n">07</span> Insights — Eng. Produção</a></li>
+      <li><a href="#m8"><span class="n">08</span> Checklist de prática</a></li>
+    </ul>
+
+    <div class="group-label">Consulta</div>
+    <ul class="navlist">
+      <li><a href="#glossario"><span class="n">✦</span> Glossário rápido</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <span class="eyebrow">Review pós-aula — Comando 2</span>
+      <h1>Aula II — Sensoriamento Remoto: STAC e Índices Espectrais</h1>
+      <p>Aula em 03/09/2026 (Emanuel Goulart) · Review gerado em 04/09/2026 · Marco zero: <code class="inline">marco-zero-2026-09-04</code></p>
+      <div class="status-strip">
+        <span class="chip">8 blocos + glossário</span>
+        <span class="chip">baseado no código real do upstream</span>
+        <span class="chip">transcrição da fala não aproveitável</span>
+      </div>
+    </div>
+
+    <div class="source-note">
+      <h3>⚠ De onde isso vem</h3>
+      <p><strong>A transcrição de áudio desta aula ficou ilegível na fala do Emanuel Goulart</strong> — confirmado em 6 transcrições diferentes ao longo do curso, sempre o mesmo padrão: falas de outros participantes saem corretas, só as dele viram palavras soltas sem sintaxe. Não é erro de idioma (traduzir não resolve) — é problema de captação de áudio na origem. Ver detalhe em <code class="inline">CLAUDE.md</code> do repositório.</p>
+      <p>Este review foi construído inteiramente a partir do <strong>código real dos notebooks</strong> que o professor publicou no upstream (<code class="inline">RS-STAC.ipynb</code> e <code class="inline">RS-Image_Processing.ipynb</code>, ambos em <code class="inline">fundamentals_gis_rs/week2/</code>), cruzado com conhecimento estabelecido da área de sensoriamento remoto. Nenhuma frase do Emanuel foi reconstruída ou parafraseada — onde a transcrição cita um termo técnico reconhecível (STAC, bbox, AWS, pixel, reflectância), ele serviu só como confirmação de tópico, não como fonte de conteúdo.</p>
+    </div>
+
+    <!-- MODULE 1 -->
+    <details class="lesson" id="m1" open>
+      <summary><span class="midx">01</span><h2>Conceitos fundamentais</h2><span class="tag">recap</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> a base necessária pra entender o resto do review — sem isso, o código da aula é só sintaxe decorada.</div>
+        <table class="reftable">
+          <tr><th>Termo</th><th>O que é</th></tr>
+          <tr><td><strong>STAC</strong> (SpatioTemporal Asset Catalog)</td><td>Padrão aberto que descreve imagens de satélite (data, área, sensor, nuvens) de forma uniforme, independente do provedor (INPE, AWS, Microsoft). Permite buscar por metadado antes de baixar qualquer pixel.</td></tr>
+          <tr><td><strong>Bbox</strong> (bounding box)</td><td>Retângulo (min-lon, min-lat, max-lon, max-lat) que delimita a área de interesse — o filtro espacial mais básico.</td></tr>
+          <tr><td><strong>CRS / EPSG</strong></td><td>Sistema de referência de coordenadas. EPSG:4326 (lat/lon, WGS84) é o padrão de GPS; cada cena pode estar num CRS projetado diferente, por isso é preciso reprojetar o bbox antes de recortar.</td></tr>
+          <tr><td><strong>Banda espectral</strong></td><td>Um satélite captura várias imagens (bandas), cada uma de uma faixa do espectro (azul, verde, vermelho, infravermelho próximo/NIR). Combinar bandas revela informação invisível a olho nu.</td></tr>
+          <tr><td><strong>Reflectância de superfície</strong></td><td>Fração da luz solar refletida pela superfície, já corrigida de efeitos atmosféricos — o valor "limpo" de cada pixel, o que sustenta comparar cenas de datas diferentes.</td></tr>
+          <tr><td><strong>NDVI / NDWI / EVI</strong></td><td>Índices espectrais — contas entre bandas que traduzem sinal bruto em algo interpretável (vigor de vegetação, presença de água, vegetação corrigida de ruído atmosférico).</td></tr>
+          <tr><td><strong>Thresholding</strong></td><td>Cortar um valor contínuo (ex: NDVI de -1 a 1) em categorias discretas por faixa de valor.</td></tr>
+          <tr><td><strong>Leitura por janela (Window)</strong></td><td>Ler só um pedaço retangular de um raster gigante em vez do arquivo inteiro.</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <!-- MODULE 2 -->
+    <details class="lesson" id="m2">
+      <summary><span class="midx">02</span><h2>Busca STAC como API filtrável</h2><span class="tag">código vs. teoria</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> entender a busca STAC como uma query paramétrica, não uma navegação manual por site de provedor.</div>
+        <p>O padrão usado nos dois notebooks é <code class="inline">client.search(bbox=..., datetime=..., collections=..., query={"eo:cloud_cover": {"lt": 15}})</code> — uma consulta espaço-temporal com filtros compostos, equivalente a uma query de backend, só que sobre um catálogo geoespacial padronizado.</p>
+        <pre><code class="language-python">client = Client.open("https://data.inpe.br/bdc/stac/v1/")
+item_search = client.search(
+    bbox=[-45.96, -11.89, -45.42, -11.53],
+    datetime='2024-08-01/2025-07-31',
+    collections=['CB4-MUX-L4-SR-1'],
+    query={"eo:cloud_cover": {"lt": 15}}
+)</code></pre>
+        <div class="callout accent">Filtrar por metadado antes de baixar evita transferir gigabytes de cena majoritariamente encoberta por nuvem que seria descartada de qualquer forma.</div>
+      </div>
+    </details>
+
+    <!-- MODULE 3 -->
+    <details class="lesson" id="m3">
+      <summary><span class="midx">03</span><h2>Leitura por janela (Window)</h2><span class="tag">código vs. teoria</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> entender RAM como restrição de projeto, e como o código contorna isso.</div>
+        <p>Uma banda em resolução total tem ~51 milhões de pixels. O notebook mede isso na prática com uma função <code class="inline">check_memory()</code> reaproveitada, chamada antes/depois de cada operação pesada — RAM cai de "carregar 3 bandas inteiras" pra "ler uma janela de 500×500" ao reprojetar o bbox de interesse (EPSG:4326 → CRS da cena) e ler só essa fatia via <code class="inline">rasterio.windows.from_bounds</code>.</p>
+        <pre><code class="language-python">def read_window(uri, bbox, masked=True):
+    with rasterio.open(uri) as src:
+        transformer = Transformer.from_crs("EPSG:4326", src.crs, always_xy=True)
+        minx, miny = transformer.transform(bbox[0], bbox[1])
+        maxx, maxy = transformer.transform(bbox[2], bbox[3])
+        window = from_bounds(minx, miny, maxx, maxy, src.transform).round_offsets().round_lengths()
+        return src.read(1, window=window, masked=masked)</code></pre>
+      </div>
+    </details>
+
+    <!-- MODULE 4 -->
+    <details class="lesson" id="m4">
+      <summary><span class="midx">04</span><h2>Normalização: min-max vs. percentil</h2><span class="tag">código vs. teoria</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> perceber a evolução do próprio código do professor entre os dois notebooks.</div>
+        <p>A primeira versão de <code class="inline">normalize()</code> (RS-STAC.ipynb) usa min/max puro — sensível a outliers, um pixel de ruído estica toda a escala. A versão usada no caso Brumadinho (RS-Image_Processing.ipynb) troca para <code class="inline">stretch()</code> por percentil (2–98), mais robusta a valores extremos.</p>
+        <table class="reftable">
+          <tr><th>Método</th><th>Fórmula</th><th>Problema que resolve</th></tr>
+          <tr><td>Min-max</td><td><code class="inline">(x - min) / (max - min)</code></td><td>Simples, mas 1 pixel de ruído distorce toda a escala</td></tr>
+          <tr><td>Percentil (2-98)</td><td><code class="inline">(x - p2) / (p98 - p2)</code>, com clip</td><td>Ignora os extremos — mais robusto a outliers/ruído de sensor</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <!-- MODULE 5 -->
+    <details class="lesson" id="m5">
+      <summary><span class="midx">05</span><h2>Índices espectrais</h2><span class="tag">código vs. teoria</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> calcular e interpretar NDVI, NDWI e EVI — aplicados ao caso real da barragem de Brumadinho.</div>
+        <table class="reftable">
+          <tr><th>Índice</th><th>Fórmula</th><th>Detecta</th></tr>
+          <tr><td>NDVI</td><td>(NIR − Red) / (NIR + Red)</td><td>Vigor de vegetação</td></tr>
+          <tr><td>NDWI</td><td>(Green − NIR) / (Green + NIR)</td><td>Água / umidade</td></tr>
+          <tr><td>EVI</td><td>G×(NIR−Red)/(NIR+C1×Red−C2×Blue+L)</td><td>Vegetação, corrigido de efeito atmosférico/solo</td></tr>
+        </table>
+        <pre><code class="language-python">def calc_ndvi(nir, red):
+    return (nir - red) / (nir + red)
+
+def calc_ndwi(green, nir):
+    return (green - nir) / (green + nir)
+
+def calc_evi(nir, red, blue, G=2.5, C1=6, C2=7.5, L=1):
+    return G * (nir - red) / (nir + C1 * red - C2 * blue + L)</code></pre>
+      </div>
+    </details>
+
+    <!-- MODULE 6 -->
+    <details class="lesson" id="m6">
+      <summary><span class="midx">06</span><h2>Classificação por limiar e diferença temporal</h2><span class="tag">código vs. teoria</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> entender como o rompimento da barragem de Brumadinho (25/01/2019) foi detectado a partir de imagem de satélite.</div>
+        <p><code class="inline">classify_ndvi()</code> corta o índice contínuo em 3 classes, calibrado pelo histograma real da cena (não um valor arbitrário): <code class="inline">&lt; 0.2</code> solo/água/urbano, <code class="inline">0.2–0.45</code> vegetação fraca, <code class="inline">≥ 0.45</code> vegetação vigorosa.</p>
+        <p>A detecção de impacto é só <code class="inline">ndvi_depois - ndvi_antes</code>, com o resultado mais forte em <code class="inline">diff &lt; -0.3</code> — perda de vegetação onde a lama de rejeitos passou.</p>
+        <div class="callout important">Mesma lógica aplicada ao NDWI revela o possível assoreamento do Rio Paraopeba.</div>
+      </div>
+    </details>
+
+    <!-- MODULE 7 -->
+    <details class="lesson" id="m7">
+      <summary><span class="midx">07</span><h2>Insights — Engenharia de Produção / Back-End</h2><span class="tag">aplicação</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <div class="objetivo"><b>Objetivo:</b> conectar os padrões técnicos da aula ao seu repertório de Eng. Produção.</div>
+        <h3>RAM como restrição de capacidade (bottleneck)</h3>
+        <p><code class="inline">check_memory()</code> monitorando RAM antes/depois de cada operação é, na prática, monitoramento de um recurso gargalo — a leitura por janela é a mitigação: processar só o necessário, no momento necessário. Equivalente direto a JIT/eliminação de desperdício do Lean, aplicado a I/O de dados em vez de estoque físico.</p>
+        <h3>Duplicação de código — dívida técnica real</h3>
+        <p><code class="inline">check_memory()</code> e uma variação de <code class="inline">normalize()</code> aparecem copiadas nos dois notebooks — já divergiram uma vez (min-max virou percentile-stretch numa cópia e não na outra). Ação concreta: extrair pra um módulo compartilhado (<code class="inline">aprendizado/utils/raster.py</code>).</p>
+        <h3>Limiar calibrado por dado real — paralelo com limites de controle</h3>
+        <p>Os limiares do NDVI (0.2 / 0.45) foram lidos do histograma real da cena antes de classificar — mesmo princípio de definir limites de controle (SPC) a partir da distribuição observada, não de um valor teórico genérico.</p>
+        <h3>Diff antes/depois como análise de causa isolada</h3>
+        <p>Subtrair duas datas da mesma variável, área e sensor isola o efeito do evento de outras fontes de variação — o mesmo racional de um estudo antes/depois em melhoria de processo.</p>
+      </div>
+    </details>
+
+    <!-- MODULE 8 -->
+    <details class="lesson" id="m8">
+      <summary><span class="midx">08</span><h2>Checklist de prática</h2><span class="tag">aplicação</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <ul class="checklist">
+          <li><input type="checkbox" disabled> Reproduzir uma busca STAC com filtro de <code class="inline">eo:cloud_cover</code> pra uma área própria (usar o bbox finder)</li>
+          <li><input type="checkbox" disabled> Implementar leitura por Window/bbox e medir a diferença de RAM com <code class="inline">check_memory()</code> antes/depois</li>
+          <li><input type="checkbox" disabled> Calcular NDVI, NDWI e EVI numa cena própria e plotar o histograma</li>
+          <li><input type="checkbox" disabled> Definir limiares de classificação a partir do histograma real (não copiar 0.2/0.45 sem checar a distribuição da própria cena)</li>
+          <li><input type="checkbox" disabled> Produzir um mapa de diferença antes/depois pra outro evento (queimada, expansão urbana)</li>
+          <li><input type="checkbox" disabled> Extrair <code class="inline">check_memory</code> e as funções de normalização pra um módulo compartilhado em <code class="inline">/aprendizado</code></li>
+          <li><input type="checkbox" disabled> Rodar o painel <code class="inline">leafmap.split_map</code> localmente e confirmar que o swipe funciona com o kernel ativo</li>
+        </ul>
+      </div>
+    </details>
+
+    <!-- GLOSSARY -->
+    <details class="lesson" id="glossario">
+      <summary><span class="midx">✦</span><h2>Glossário rápido</h2><span class="tag">consulta</span><span class="chev">▶</span></summary>
+      <div class="lbody">
+        <table class="reftable">
+          <tr><th>Termo</th><th>Significado direto</th></tr>
+          <tr><td>STAC</td><td>SpatioTemporal Asset Catalog — padrão aberto de metadado pra buscar imagens de satélite</td></tr>
+          <tr><td>Bbox</td><td>Bounding box — retângulo de coordenadas que delimita uma área</td></tr>
+          <tr><td>CRS / EPSG</td><td>Sistema de referência de coordenadas — como número vira posição real no mapa</td></tr>
+          <tr><td>NIR</td><td>Near Infrared — banda de infravermelho próximo, base do NDVI</td></tr>
+          <tr><td>NDVI / NDWI / EVI</td><td>Índices espectrais de vegetação / água / vegetação corrigida</td></tr>
+          <tr><td>Window</td><td>Leitura de só um recorte retangular de um raster grande</td></tr>
+          <tr><td>GeoTIFF</td><td>Formato de raster georreferenciado — abre direto no QGIS</td></tr>
+          <tr><td>Brazil Data Cube (BDC)</td><td>Catálogo STAC do INPE — fonte usada nos dois notebooks desta aula</td></tr>
+        </table>
+      </div>
+    </details>
+
+    <footer>
+      Gerado a partir de <code class="inline">fundamentals_gis_rs/week2/RS-STAC.ipynb</code> e <code class="inline">fundamentals_gis_rs/week2/_drafts/RS-Image_Processing.ipynb</code> — marco zero <code class="inline">marco-zero-2026-09-04</code>. Transcrição da fala do Emanuel não aproveitável (ver <code class="inline">CLAUDE.md</code>).
+    </footer>
+  </main>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<script>
+  hljs.highlightAll();
+  document.getElementById('menubtn').addEventListener('click', function(){
+    document.getElementById('sidenav').classList.toggle('open');
+  });
+  document.querySelectorAll('.navlist a').forEach(function(a){
+    a.addEventListener('click', function(){
+      var id = a.getAttribute('href').slice(1);
+      var el = document.getElementById(id);
+      if(el && !el.open){ el.open = true; }
+      document.getElementById('sidenav').classList.remove('open');
+    });
+  });
+</script>
 </body>
 </html>
